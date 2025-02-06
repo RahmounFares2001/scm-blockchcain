@@ -45,7 +45,7 @@ export default function page() {
         <div className='flex justify-between' >
           <h1>All Suppliers List</h1>
 
-          {/* <SearchBar />           */}
+          <SearchBar />          
         </div>
         <SuppliersTable />
       </div>
