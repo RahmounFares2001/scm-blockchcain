@@ -1,12 +1,34 @@
 "use client";
 
 import Image from 'next/image'
-import React from 'react'
+import React, { useState } from 'react'
 
 import {motion} from "framer-motion";
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function Hero() {
+  const router = useRouter();
+
+  // connect to wallet
+  const [currentAccount, setCurrentAccount] = useState("");
+
+  const connectWallet = async () => {
+    try {
+      if (!ethereum) return alert("Please install MetaMask.");
+
+      const accounts = await ethereum.request({ method: "eth_requestAccounts", });
+
+      setCurrentAccount(accounts[0]);
+      // window.location.reload();
+      router.push('/adminDashboard');
+    } catch (error) {
+      console.log(error);
+
+      throw new Error("No ethereum object");
+    }
+  };
+
   return (
     <section className='text-gray-300 flex gap-20 xl:gap-32 pt-20 lg:pt-14 justify-center items-center lg:pb-24 md:pb-40 pb-52' >
 
@@ -34,15 +56,22 @@ export default function Hero() {
               hover:text-black hover:bg-gray-400'
                   initial={{opacity: 0, x: '-10vw'}}
                   animate={{opacity: 1, x: '0vw'}}
-                  transition={{delay: 0.7, duration: 0.2}}>
-                    <Link href='/sign' >Actor ( Connect to wallet )</Link></motion.button>
+                  transition={{delay: 0.7, duration: 0.2}}
+                  onClick={()=> {connectWallet()}} >
+
+                    Actor ( Connect to wallet )
+
+          </motion.button>
 
           <motion.button className='border-2 border-gray-300  px-10 py-2 rounded-sm 
               hover:text-black hover:bg-gray-400'
                   initial={{opacity: 0, x: '-10vw'}}
                   animate={{opacity: 1, x: '0vw'}}
                   transition={{delay: 0.9, duration: 0.2}}>
-                    <Link href='/sign' >Client</Link></motion.button>
+
+                    <Link href='/clientPage' >Client</Link>
+
+          </motion.button>
 
         </div>
       </div>

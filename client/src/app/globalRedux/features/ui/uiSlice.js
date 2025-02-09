@@ -4,7 +4,6 @@ const initialState = {
     showSideBar: true,
     showHoveredSideBar: false,
     dropProfileMenu: false,
-    showAddSupplierForm: false,
 };
 
 export const uiSlice = createSlice({

@@ -1,0 +1,29 @@
+address public admin;
+    enum Role { ADMIN, SUPPLIER, MANUFACTURER, DISTRIBUTOR }
+
+    struct User {
+        address userAddress;
+        Role role;
+        bool isRegistered;
+    }
+
+    mapping(address => User) public users;
+    bool public adminCreated = false;
+
+    constructor(address _adminAddress) {
+        require(!adminCreated, "Admin already created");
+        require(_adminAddress != address(0), "Invalid admin address");
+
+        admin = _adminAddress;
+        users[_adminAddress] = User({
+            userAddress: _adminAddress,
+            role: Role.ADMIN,
+            isRegistered: true
+        });
+        adminCreated = true;
+    }
+
+    modifier onlyAdmin() {
+        require(msg.sender == admin, "Not authorized");
+        _;
+    }

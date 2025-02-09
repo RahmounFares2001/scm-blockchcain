@@ -5,7 +5,13 @@ import React, { useEffect, useRef, useState } from 'react'
 // scan
 import QrScanner from 'qr-scanner';
 
+
+// icons 
+import { IoHomeOutline } from "react-icons/io5";
+import { RiArrowGoBackLine } from "react-icons/ri";
+
 import { BrowserMultiFormatReader } from '@zxing/library';
+import Link from 'next/link';
 
 export default function page() {
     // track method
@@ -63,6 +69,16 @@ export default function page() {
   
   return (
     <section className='w-full h-dvh flex justify-center items-center bg-primary' >
+        
+        {/* back to home */}
+        <Link href="/"
+              className='absolute top-3 left-3 w-14 h-14 border rounded-full
+                    bg-gray-100 flex justify-center items-center cursor-pointer
+                    shadow-md shadow-gray-300 hover:bg-primary hover:text-gray-200' >
+          <RiArrowGoBackLine className='text-3xl' />
+        </Link>
+              
+
 
         <div className='w-11/12 sm:w-4/5 md:w-3/5 h-[550px] bg-white flex flex-col gap-5 px-10 py-8
                 rounded-lg shadow-lg shadow-gray-500' >
@@ -169,7 +185,7 @@ export default function page() {
                     <h1>Date: ....</h1>
                     <hr className='border-gray-500' />
                     {/* Distrutor */}
-                    <h1>Stage: Arrive in Distributor</h1>
+                    <h1>Stage: Arrive at Distributor</h1>
                     <h1>Date: ....</h1>
                     <hr className='border-gray-500' />
                     {/* Start shipement */}

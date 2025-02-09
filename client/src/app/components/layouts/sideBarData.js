@@ -8,7 +8,10 @@ import { SiStagetimer } from "react-icons/si";
 import { TbPrismPlus } from "react-icons/tb";
 import { PiRoadHorizonBold } from "react-icons/pi";
 
-import { MdOutlineHomeWork } from "react-icons/md";
+import { IoMdAdd } from "react-icons/io";
+import { CgPlayListAdd } from "react-icons/cg";
+import { BiCartAdd } from "react-icons/bi";
+
 
 
 const sideBarData = [
@@ -18,7 +21,7 @@ const sideBarData = [
         name: 'Dashboard',
         activeName: undefined,
         icon: <RxDashboard />,
-        href: '/dashboard'
+        href: '/adminDashboard'
     },
     {
       id: 2,
@@ -26,7 +29,16 @@ const sideBarData = [
       name: 'Suppliers',
       activeName: "suppliers",
       icon: <PiTruckDuotone />,
-      href: '/dashboard/suppliers'
+      href: '/adminDashboard/suppliers'
+    },
+    ,
+    {
+      id: 3,
+      title: undefined,
+      name: 'Add Suppliers',
+      activeName: "addSupplier",
+      icon: <IoMdAdd />,
+      href: '/adminDashboard/addSupplier'
     },
     {
       id: 3,
@@ -34,31 +46,67 @@ const sideBarData = [
       name: "Raw materiel",
       activeName: "rawMaterial",
       icon: <LiaTruckLoadingSolid />,
-      href: '/dashboard/rawMaterial'
+      href: '/adminDashboard/rawMaterial'
     },
+    ,
     {
       id: 4,
+      title: undefined,
+      name: "Add Raw materiel",
+      activeName: "addRawMaterial",
+      icon: <CgPlayListAdd />,
+      href: '/adminDashboard/addRawMaterial'
+    },
+    {
+      id: 5,
       title: "MANUFACT",
       name: "Manufactories",
       activeName: "manufactories",
       icon: <IoConstructOutline />,
-      href: '/dashboard/manufactories'
+      href: '/adminDashboard/manufactories'
+    },
+    ,
+    {
+      id: 6,
+      title: undefined,
+      name: "Add Manufacturer",
+      activeName: "addManufacturer",
+      icon: <IoMdAdd />,
+      href: '/adminDashboard/addManufacturer'
     },
     {
-      id: 5,
+      id: 7,
       title: "DELIVERY",
       name: "Distributors",
       activeName: "distributors",
       icon: <MdOutlineDeliveryDining />,
-      href: '/dashboard/distributors'
+      href: '/adminDashboard/distributors'
+    },
+    ,
+    {
+      id: 8,
+      title: undefined,
+      name: "Add Distributor",
+      activeName: "addDistributor",
+      icon: <IoMdAdd />,
+      href: '/adminDashboard/addDistributor'
     },
     {
-      id: 6,
+      id: 9,
       title: "ORDERS",
       name: "Product orders",
       activeName: "productOrders",
       icon: <TbPrismPlus />,
-      href: '/dashboard/productOrders'
+      href: '/adminDashboard/productOrders'
+    },
+    ,
+    {
+      id: 10,
+      title: undefined,
+      name: "Add order",
+      activeName: "addOrder",
+      icon: <BiCartAdd />,
+      href: '/adminDashboard/addOrder'
     },
     {
       id: 7,
@@ -66,7 +114,7 @@ const sideBarData = [
       name: "All Products Stages",
       activeName: "productsStages",
       icon: <SiStagetimer />,
-      href: '/dashboard/productsStages'
+      href: '/adminDashboard/productsStages'
     },
     {
       id: 8,
@@ -74,7 +122,7 @@ const sideBarData = [
       name: "Track Product",
       activeName: "trackProduct",
       icon: <PiRoadHorizonBold />,
-      href: '/dashboard/trackProduct'
+      href: '/adminDashboard/trackProduct'
     },
     
 ]

@@ -23,12 +23,12 @@ export default function SideBar() {
 
    // Extract currentPage
    const pagePart = pathname.split("/").find((segment, index, array) => {
-     const dashboardIndex = array.indexOf("dashboard");
+     const dashboardIndex = array.indexOf("adminDashboard");
      return index === dashboardIndex + 1;
    });
 
   return (
-    <div className={`${showSideBar ? "w-[240px] fixed" : "w-max px-5" }  top-0 bottom-0 left-0 flex flex-col`}
+    <div className={`${showSideBar ? "w-[240px] fixed" : "w-max px-5" } h-dvh top-0 bottom-0 left-0 flex flex-col`}
           onMouseEnter={() => {dispatch(setUi({key: "showHoveredSideBar", value: true}))}}
           onMouseLeave={() => {dispatch(setUi({key: "showHoveredSideBar", value: false}))}}
           onClick={()=> {dispatch(setUi({key: "dropProfileMenu", value: false}))}} >

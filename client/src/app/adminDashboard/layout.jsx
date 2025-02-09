@@ -18,10 +18,10 @@ export default function layout({children}) {
   const showHoveredSideBar = useSelector((state) => state.ui.showHoveredSideBar);
 
   return (
-    <main className='flex relative'  >
+    <main className='flex relative h-full'  >
     
         {/* side bar */}
-        <div className={`${showSideBar ? "w-[240px]" : "w-max" } relative bg-primary`}
+        <div className={`${showSideBar ? "w-[240px]" : "w-max" } overflow-y-auto bg-primary `}
           onClick={()=> {dispatch(setUi({key: "dropProfileMenu", value: false}))}} >
           <SideBar />
         </div>
@@ -39,14 +39,12 @@ export default function layout({children}) {
           </div>
 
           <div onClick={()=> {dispatch(setUi({key: "dropProfileMenu", value: false}))}}
-              className='h-full bg-gray-100' >
+              className='bg-gray-100' >
             {children}
           </div>
           
         </div>
 
-         {/* add supplier form  */}
-         <AddSupplierForm />
     </main>
   )
 }

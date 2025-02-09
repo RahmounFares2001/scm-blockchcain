@@ -17,6 +17,7 @@ import { IoIosArrowRoundForward } from "react-icons/io";
 
 // redux
 import { useDispatch } from 'react-redux';
+import Link from 'next/link';
 
 
 export default function page() {
@@ -24,19 +25,20 @@ export default function page() {
 
 
   return (
-    <div className='px-10 py-10 flex flex-col gap-5' >
+    <div className='h-dvh px-10 py-10 flex flex-col gap-5' >
       <h1 className='text-sm flex gap-1 items-center' >
         Dashboard
         <IoIosArrowRoundForward className='text-gary-600' />
         Suppliers
       </h1>
 
-      <div className='w-full flex justify-between items-center' >
+      <Link href="/adminDashboard/addSupplier" 
+          className='w-full flex justify-between items-center' >
         <h1 className='text-xl' >Suppliers</h1>
         <button className='px-10 py-2 border bg-primary hover:bg-green-800 
             text-white font-bold text-sm rounded-lg shadow-md shadow-gray-300'
               onClick={()=> {dispatch(setUi({key: "showAddSupplierForm", value: true}))}}  >Add Supplier</button>
-      </div>
+      </Link>
 
       {/* table */}
       <div className='bg-white px-5 py-5 flex flex-col gap-5 rounded-lg
@@ -49,7 +51,6 @@ export default function page() {
         </div>
         <SuppliersTable />
       </div>
-
      
 
     </div>
