@@ -3,3 +3,10 @@ sepolia: {
       accounts: [
         'e3ac1f69ee5bfdaf721dea21cf499900cd9f2948bad06f6183f3271b65d9dd7a',
       ],
+
+
+    ganache: {
+      url: process.env.URL,
+      chainId: process.env.CHAINID, // ganache network id
+      accounts: process.env.ADMIN_PRIVATE_KEY,
+    },

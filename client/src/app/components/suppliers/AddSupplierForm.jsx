@@ -76,7 +76,7 @@ export default function AddSupplierForm() {
 
                 {/* supplier address */}
                 <div className='w-full flex flex-col gap-2' >
-                    <label htmlFor="companyName">Supplier Address</label>
+                    <label htmlFor="supplierAddress">Supplier Address</label>
                     <input type="text" name='supplierAddress'
                         value={formik.values.supplierAddress}
                         onChange={formik.handleChange}

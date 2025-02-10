@@ -18,7 +18,8 @@ const useGetAllDistributors = () => {
       const formattedDistributors = data[0].map((_, index) => ({
         address: data[0][index],
         name: data[1][index],
-        place: data[2][index],
+        emailAddress: data[2][index],
+        place: data[3][index],
       }));
 
       setDistributors(formattedDistributors);

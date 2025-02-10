@@ -6,23 +6,32 @@ const useCreateDistributor = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const createDistributor = async (distributorAddress, name, place) => {
+  const createDistributor = async (distributorAddress, name, emailAddress, place) => {
     try {
       setLoading(true);
       setError(null);
 
-      const contract = await createEthereumContract(); // Get contract instance
+      if (!window.ethereum) {
+        alert("Please install MetaMask!");
+        return;
+      }
+      
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
 
-      const tx = await contract.createDistributor(distributorAddress, name, place);
+      const contract = await createEthereumContract(); 
+      const tx = await contract.createDistributor(distributorAddress, name, emailAddress, place);
       await tx.wait();
 
       alert("Distributor created successfully!");
+
     } catch (err) {
-      setError(err.message);
+      console.error("Error creating distributor:", err);
+        setError(err.message);
     } finally {
-      setLoading(false);
-    }
-  };
+        setLoading(false);
+      }
+    };
+
 
   return { createDistributor, loading, error };
 };
