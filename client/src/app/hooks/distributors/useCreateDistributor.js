@@ -1,39 +1,43 @@
-import { useState } from "react";
+"use client";
 
+import { useState } from "react";
 import { createEthereumContract } from "@/app/utils/constants";
 
-const useCreateDistributor = () => {
+export default function useCreateDistributor() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
 
-  const createDistributor = async (distributorAddress, name, emailAddress, place) => {
+  const createDistributor = async (_distributorAddress, _name, _emailAddress, _place) => {
     try {
-      setLoading(true);
-      setError(null);
-
       if (!window.ethereum) {
         alert("Please install MetaMask!");
         return;
       }
-      
-      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
 
-      const contract = await createEthereumContract(); 
-      const tx = await contract.createDistributor(distributorAddress, name, emailAddress, place);
+      setLoading(true);
+      setError(null);
+      setSuccess(false);
+
+      const contract = await createEthereumContract();
+      if (!contract) {
+        setError("Error connecting to the contract");
+        return;
+      }
+
+      const tx = await contract.createDistributor(_distributorAddress, _name, _emailAddress, _place);
       await tx.wait();
 
-      alert("Distributor created successfully!");
-
+      setSuccess(true);
+      alert("Distributor created successfully!"); 
     } catch (err) {
       console.error("Error creating distributor:", err);
-        setError(err.message);
+      setError("Failed to create distributor.");
+      alert("Error: Failed to create distributor");
     } finally {
-        setLoading(false);
-      }
-    };
+      setLoading(false);
+    }
+  };
 
-
-  return { createDistributor, loading, error };
-};
-
-export default useCreateDistributor;
+  return { createDistributor, loading, error, success };
+}

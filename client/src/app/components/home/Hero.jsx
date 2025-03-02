@@ -6,6 +6,7 @@ import React, { useState } from 'react'
 import {motion} from "framer-motion";
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { createEthereumContract } from '@/app/utils/constants';
 
 export default function Hero() {
   const router = useRouter();
@@ -18,10 +19,31 @@ export default function Hero() {
       if (!ethereum) return alert("Please install MetaMask.");
 
       const accounts = await ethereum.request({ method: "eth_requestAccounts", });
+      const userAddress = accounts[0];
 
       setCurrentAccount(accounts[0]);
+
+      // Get user role from the smart contract
+      const contract = await createEthereumContract();
+      const user = await contract.users(userAddress);
+      const userRole = user.role; 
+
+      console.log("User role:", userRole);
+
+      if (userRole === 0n) { // Role.ADMIN
+        router.push('/adminDashboard');
+      } else if (userRole === 1n) { // Role.SUPPLIER
+          router.push('/supplierDashboard');
+      } else if (userRole === 2n) { // Role.MANUFACTURER
+          router.push('/manufacturerDashboard');
+      } else if (userRole === 3n) { // Role.DISTRIBUTOR
+          router.push('/distributorDashboard');
+      } else {
+          alert("Unknown role or unregistered user.");
+      }
+
+
       // window.location.reload();
-      router.push('/adminDashboard');
     } catch (error) {
       console.log(error);
 

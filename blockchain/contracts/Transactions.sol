@@ -40,46 +40,73 @@ contract Transactions {
     }
 
     // orders
+    struct ClientOrder {
+        uint256 id;
+        uint256 orderId; // Links to Order
+        string clientName;
+        string clientAddress;
+        uint256 clientProductQuantity;
+        uint256 shouldArriveToClientAt;
+        bool isShippedToClient;
+        uint256 shippedToClientAt;
+        bool isArrivedToClient;
+        uint256 deliveredToClientAt;
+    }
+
     struct Order {
         uint256 id;
         address manufacturerAddress;
         string manufacturerName;
         bool isProduced;
         uint256 producedAt;
-        bool isShippedToDistributor; 
+        bool isShippedToDistributor;
         uint256 shippedToDistributorAt;
-
 
         address distributorAddress;
         string distributorName;
-        bool isArrivedToDistributor; 
+        bool isArrivedToDistributor;
         uint256 arrivedToDistributorAt;
-        uint256 shippedToClientAt;
-        uint256 deliveredToClientAt;
-
-        string clientName;
-        string[] clientAddress;
 
         string productName;
-        string productQuantity;
-        
+        uint256 productQuantity;
+        uint256 productHash; // productQuantity & createdAt
+
         string orderStatus;
         uint256 createdAt;
     }
 
+    struct ClientOrderWithOrder {
+        ClientOrder clientOrder;
+        Order order;
+    }
+
 
     mapping(uint256 => Order) public orders;
+    mapping(uint256 => ClientOrder[]) public clientOrders; // track multiple ClientOrders per Order
+    mapping(uint256 => ClientOrder) public clientOrderById; // lookup for a single ClientOrder
+
     uint256[] public orderIds;
+    uint256 private orderCounter = 0;
+    uint256 private clientOrderCounter = 0;
 
     event OrderCreated(
         uint256 indexed id,
         address indexed manufacturerAddress,
         address indexed distributorAddress,
-        string productName
-    );
+        string productName);
+        
+    event ClientOrderAdded(
+        uint256 indexed clientOrderId,
+        uint256 indexed orderId,
+        string clientName);
 
+    event OrderDelivered(
+        uint256 orderId,
+        string clientName,
+        uint256 timestamp);
 
-    uint256 private orderCounter = 0; 
+    event OrderShipped(uint256 orderId, uint256 productHash);
+
 
     function createOrder(
         address _manufacturerAddress,
@@ -87,10 +114,11 @@ contract Transactions {
         address _distributorAddress,
         string memory _distributorName,
         string memory _productName,
-        string memory _productQuantity
+        uint256 _productQuantity
     ) external onlyAdmin {
         orderCounter++;
         
+
         orders[orderCounter] = Order({
             id: orderCounter,
             manufacturerAddress: _manufacturerAddress,
@@ -103,20 +131,16 @@ contract Transactions {
             distributorName: _distributorName,
             isArrivedToDistributor: false,
             arrivedToDistributorAt: 0,
-            shippedToClientAt: 0,
-            deliveredToClientAt: 0,
-            clientName: "",
-            clientAddress: new string[](0),
             productName: _productName,
             productQuantity: _productQuantity,
-            orderStatus: "pendingProduction",
+            productHash: 0,
+            orderStatus: "Pending Production",
             createdAt: block.timestamp
         });
 
         orderIds.push(orderCounter);
         emit OrderCreated(orderCounter, _manufacturerAddress, _distributorAddress, _productName);
     }
-
 
     function getAllOrders() external view returns (Order[] memory) {
         Order[] memory allOrders = new Order[](orderCounter);
@@ -126,6 +150,11 @@ contract Transactions {
         }
         
         return allOrders;
+    }
+
+    function getOrderByOrderId(uint256 _orderId) public view returns (Order memory) {
+        require(_orderId > 0 && _orderId <= orderCounter, "Invalid Order ID");
+        return orders[_orderId];
     }
 
 
@@ -142,18 +171,38 @@ contract Transactions {
         }
 
         // result table
-        Order[] memory manufacturerOrderss = new Order[](count);
+        Order[] memory _orders = new Order[](count);
         uint256 index = 0;
         
         for(uint256 i = 0; i < orderCounter; i++) {
             uint256 orderId = i + 1;
             if(orders[orderId].manufacturerAddress == _manufacturerAddress) {
-                manufacturerOrderss[index] = orders[orderId];
+                _orders[index] = orders[orderId];
                 index++;
             }
         }
 
-        return manufacturerOrderss;
+        return _orders;
+    }
+
+
+    function getOrdersByDistributorAddress(address _distributorAddress) public view returns (Order[] memory) {
+        uint256 count = 0;
+        for (uint256 i = 1; i <= orderCounter; i++) {
+            if (orders[i].distributorAddress == _distributorAddress) {
+                count++;
+            }
+        }
+
+        Order[] memory _orders = new Order[](count);
+        uint256 index = 0;
+        for (uint256 i = 1; i <= orderCounter; i++) {
+            if (orders[i].distributorAddress == _distributorAddress) {
+                _orders[index] = orders[i];
+                index++;
+            }
+        }
+        return _orders;
     }
 
 
@@ -165,6 +214,7 @@ contract Transactions {
         orders[_orderId].producedAt = block.timestamp;
     }
 
+
     function shipProductToDistributor(uint256 _orderId) external onlyManufacturer {
         require(orders[_orderId].manufacturerAddress == msg.sender, "Not authorized");
         require(orders[_orderId].isProduced, "Order not produced yet");
@@ -172,6 +222,19 @@ contract Transactions {
 
         orders[_orderId].isShippedToDistributor = true;
         orders[_orderId].shippedToDistributorAt = block.timestamp;
+        
+        // Generate product hash 
+        orders[_orderId].productHash = createProductHash(
+            orders[_orderId].productQuantity,
+            orders[_orderId].createdAt,
+            orders[_orderId].producedAt,
+            orders[_orderId].shippedToDistributorAt
+        );
+        
+        // Update order status
+        orders[_orderId].orderStatus = "Shipped to Distributor";
+        
+        emit OrderShipped(_orderId, orders[_orderId].productHash);
     }
 
     function confirmArrivalToDistributor(uint256 _orderId) external onlyDistributor {
@@ -183,27 +246,127 @@ contract Transactions {
     }
 
 
-    function shipClientDelivery(
+
+    function addClientOrder(
         uint256 _orderId,
         string memory _clientName,
-        string[] memory _clientAddress,
-        uint256 _deliveredToClientAt
+        string memory _clientAddress,
+        uint256 _clientProductQuantity,
+        uint256 _shouldArriveToClientAt
     ) external onlyDistributor {
-        require(orders[_orderId].distributorAddress == msg.sender, "Not authorized");
-        require(orders[_orderId].isArrivedToDistributor, "Order not arrived at distributor yet");
-        require(orders[_orderId].deliveredToClientAt == 0, "Order already delivered");
+        require(_orderId > 0 && _orderId <= orderCounter, "Invalid Order ID");
+        Order storage order = orders[_orderId];
 
-        orders[_orderId].clientName = _clientName;
-        orders[_orderId].clientAddress = _clientAddress;
-        orders[_orderId].deliveredToClientAt = _deliveredToClientAt;
+        require(order.isArrivedToDistributor, "Order not yet at distributor");
+        require(_clientProductQuantity <= order.productQuantity, "Not enough stock available");
 
-        
-        if (orders[_orderId].shippedToClientAt == 0) {
-            orders[_orderId].shippedToClientAt = block.timestamp;
-        }
-        
+        // Reduce Order.productQuantity
+        order.productQuantity -= _clientProductQuantity;
+
+        clientOrderCounter++;
+        ClientOrder memory newClientOrder = ClientOrder({
+            id: clientOrderCounter,
+            orderId: _orderId,
+            clientName: _clientName,
+            clientAddress: _clientAddress,
+            clientProductQuantity: _clientProductQuantity,
+            shouldArriveToClientAt: _shouldArriveToClientAt,
+            isShippedToClient: false,
+            shippedToClientAt: 0,
+            isArrivedToClient: false,
+            deliveredToClientAt: 0
+        });
+
+        clientOrders[_orderId].push(newClientOrder);
+        clientOrderById[clientOrderCounter] = newClientOrder;
+
+        emit ClientOrderAdded(clientOrderCounter, _orderId, _clientName);
     }
 
+    function shipClientOrder(uint256 _clientOrderId) external onlyDistributor {
+        require(_clientOrderId > 0 && _clientOrderId <= clientOrderCounter, "Invalid Client Order ID");
+        ClientOrder storage clientOrder = clientOrderById[_clientOrderId];
+
+        require(clientOrder.shippedToClientAt == 0, "Already shipped");
+
+        clientOrder.isShippedToClient = true;
+        clientOrder.shippedToClientAt = block.timestamp;
+    }
+
+    function clientConfirmDelivery(uint256 _clientOrderId) public {
+        require(_clientOrderId > 0 && _clientOrderId <= clientOrderCounter, "Invalid Client Order ID");
+        ClientOrder storage clientOrder = clientOrderById[_clientOrderId];
+
+        require(!clientOrder.isArrivedToClient, "Already delivered");
+
+        clientOrder.isArrivedToClient = true;
+        clientOrder.deliveredToClientAt = block.timestamp;
+
+        emit OrderDelivered(clientOrder.orderId, clientOrder.clientName, block.timestamp);
+    }
+
+
+    function getAllClientOrders() public view returns (ClientOrderWithOrder[] memory) {
+        uint256 totalClientOrders = 0;
+
+        // Count all client orders
+        for (uint256 i = 1; i <= orderCounter; i++) {
+            totalClientOrders += clientOrders[i].length;
+        }
+
+        ClientOrderWithOrder[] memory allClientOrders = new ClientOrderWithOrder[](totalClientOrders);
+        uint256 index = 0;
+
+        for (uint256 i = 1; i <= orderCounter; i++) {
+            for (uint256 j = 0; j < clientOrders[i].length; j++) {
+                allClientOrders[index] = ClientOrderWithOrder({
+                    clientOrder: clientOrders[i][j],
+                    order: orders[i]
+                });
+                index++;
+            }
+        }
+
+        return allClientOrders;
+    }
+
+
+    function getOrderDetailsByClientOrderId(uint256 _clientOrderId) public view returns (Order memory, ClientOrder memory) {
+        require(_clientOrderId > 0 && _clientOrderId <= clientOrderCounter, "Invalid Client Order ID");
+        ClientOrder memory clientOrder = clientOrderById[_clientOrderId];
+        Order memory order = orders[clientOrder.orderId];
+        return (order, clientOrder);
+    }
+
+
+    function getClientOrderByDistributorAddress(address _distributorAddress) public view returns (ClientOrderWithOrder[] memory) {
+        uint256 totalClientOrders = 0;
+
+        // Count client orders for the given distributor
+        for (uint256 i = 1; i <= orderCounter; i++) {
+            if (orders[i].distributorAddress == _distributorAddress) {
+                totalClientOrders += clientOrders[i].length;
+            }
+        }
+
+        ClientOrderWithOrder[] memory distributorClientOrders = new ClientOrderWithOrder[](totalClientOrders);
+        uint256 index = 0;
+
+        // Store client orders for the given distributor
+        for (uint256 i = 1; i <= orderCounter; i++) {
+            if (orders[i].distributorAddress == _distributorAddress) {
+                for (uint256 j = 0; j < clientOrders[i].length; j++) {
+                    distributorClientOrders[index] = ClientOrderWithOrder({
+                        clientOrder: clientOrders[i][j],
+                        order: orders[i]
+                    });
+                    index++;
+                }
+            }
+        }
+
+        return distributorClientOrders;
+    }
 
 
     // distributor
@@ -211,6 +374,7 @@ contract Transactions {
         string name;
         string place;
         string emailAddress;
+        bool isDeleted;
     }
 
     modifier onlyDistributor() {
@@ -237,7 +401,11 @@ contract Transactions {
             isRegistered: true
         });
         
-        distributors[_distributorAddress] = DistributorDetails(_name, _emailAddress, _place);
+        distributors[_distributorAddress] = DistributorDetails({
+            name: _name,
+            emailAddress: _emailAddress,
+            place: _place,
+            isDeleted: false });
         distributorAddresses.push(_distributorAddress);
     }
 
@@ -252,17 +420,29 @@ contract Transactions {
         
         address[] memory addresses = new address[](length);
         string[] memory names = new string[](length);
-        string[] memory emailAddress = new string[](length);
+        string[] memory emailAddresses = new string[](length);
         string[] memory places = new string[](length);
         
         for(uint i = 0; i < length; i++) {
             address distributorAddr = distributorAddresses[i];
             addresses[i] = distributorAddr;
             names[i] = distributors[distributorAddr].name;
+            emailAddresses[i] = distributors[distributorAddr].emailAddress; 
             places[i] = distributors[distributorAddr].place;
         }
         
-        return (addresses, names, places, emailAddress);
+        return (addresses, names, emailAddresses, places); 
+    }
+
+    function getDistributorByAddress(address distributorAddress) public view returns (DistributorDetails memory) {
+        require(users[distributorAddress].isRegistered == true, "Distributor does not exist");
+        return distributors[distributorAddress];
+    }
+
+    function deleteDistributor(address distributorAddress) external onlyAdmin {
+        require(users[distributorAddress].isRegistered, "Distributor not found");
+        
+        distributors[distributorAddress].isDeleted = true;
     }
 
 
@@ -272,6 +452,7 @@ contract Transactions {
         string name;
         string email;
         string place;
+        bool isDeleted;
     }
 
     modifier onlyManufacturer() {
@@ -298,7 +479,11 @@ contract Transactions {
             isRegistered: true
         });
         
-        manufacturers[_manufacturerAddress] = ManufacturerDetails(_name, _email, _place);
+        manufacturers[_manufacturerAddress] = ManufacturerDetails({
+            name: _name,
+            email: _email,
+            place: _place,
+            isDeleted: false });
         manufacturerAddresses.push(_manufacturerAddress);
     }
 
@@ -327,6 +512,18 @@ contract Transactions {
         
         return (addresses, names, emails, places);
     }
+
+    function getManufacturerByAddress(address manufacturerAddress) public view returns (ManufacturerDetails memory) {
+        require(users[manufacturerAddress].isRegistered == true, "Manufacturer does not exist");
+        return manufacturers[manufacturerAddress];
+    }
+
+
+    function deleteManufacturer(address manufacturerAddress) external onlyAdmin {
+        require(users[manufacturerAddress].isRegistered, "Manufacturer not found");
+        
+        suppliers[manufacturerAddress].isDeleted = true;
+    }
     
 
 
@@ -334,10 +531,11 @@ contract Transactions {
     struct SupplierDetails {
         string name;
         uint256 reliabilityRating; // 1-5
-        bool isFraud; // is supplier fraud
+        string isFraud; // Fraud or Reliable or Under Review
         string place;
         string emailAddress;
-        string[] violations; // المخالفات
+        string[] violations;
+        bool isDeleted;
     }
 
     mapping(address => SupplierDetails) public suppliers;
@@ -361,10 +559,11 @@ contract Transactions {
         suppliers[_supplierAddress] = SupplierDetails({
             name: _name,
             reliabilityRating: 5,
-            isFraud: false,
+            isFraud: "Reliable",
             place: _place,
             emailAddress: _emailAddress, 
-            violations: new string[](0)
+            violations: new string[](0),
+            isDeleted: false
         });
         
         supplierAddresses.push(_supplierAddress);
@@ -374,7 +573,7 @@ contract Transactions {
         address[] memory,
         string[] memory,
         uint256[] memory,
-        bool[] memory,
+        string[] memory,
         string[] memory,
         string[] memory,  
         string[][] memory 
@@ -384,7 +583,7 @@ contract Transactions {
         address[] memory addresses = new address[](length);
         string[] memory names = new string[](length);
         uint256[] memory ratings = new uint256[](length);
-        bool[] memory fraudStatuses = new bool[](length);
+        string[] memory fraudStatuses = new string[](length);
         string[] memory places = new string[](length);
         string[] memory emails = new string[](length);  
         string[][] memory allViolations = new string[][](length);  
@@ -403,30 +602,142 @@ contract Transactions {
         return (addresses, names, ratings, fraudStatuses, places, emails, allViolations);
     }
 
+    function getSupplierByAddress(address supplierAddress) public view returns (SupplierDetails memory) {
+        require(users[supplierAddress].isRegistered == true, "Supplier does not exist");
+        return suppliers[supplierAddress];
+    }
+
     function addViolation(address _supplierAddress, string memory _violation) public onlyAdmin {
         require(users[_supplierAddress].isRegistered, "Supplier not registered");
 
         suppliers[_supplierAddress].violations.push(_violation);
     }
 
+    function getViolationsBySupplierAddress(address _supplierAddress) public view returns (string[] memory) {
+        require(users[_supplierAddress].isRegistered, "Supplier not registered");
+        return suppliers[_supplierAddress].violations;
+    }
 
 
 
-    function updateSupplierReliability(address supplierAddress, uint orderId) external onlyAdmin {
+
+
+   function updateSupplierReliabilityOnDelay(address supplierAddress, uint orderId, bool confirmDelivery) external {
         require(rawMaterailOrders[orderId].isDelivered, "Order not yet delivered");
 
         uint256 delay = rawMaterailOrders[orderId].arrivedAt - rawMaterailOrders[orderId].shouldArriveAt;
         uint256 daysDelayed = delay / 1 days;
-        
+
         if (daysDelayed > 0) {
-            suppliers[supplierAddress].reliabilityRating = suppliers[supplierAddress].reliabilityRating > (daysDelayed * 10) / 100
-                ? suppliers[supplierAddress].reliabilityRating - (daysDelayed * 10) / 100 : 0;
+            uint256 penalty = daysDelayed / 10; // 0.1 per day
+
+            if (suppliers[supplierAddress].reliabilityRating > penalty) {
+                suppliers[supplierAddress].reliabilityRating -= penalty;
+            } else {
+                suppliers[supplierAddress].reliabilityRating = 0;
+            }
         }
 
         if (suppliers[supplierAddress].reliabilityRating < 3) {
-            suppliers[supplierAddress].isFraud = true;
+            suppliers[supplierAddress].isFraud = "Fraud";
+        }
+
+        string memory violation = string(abi.encodePacked("Supplier delayed by ", toString(daysDelayed), " days."));
+        suppliers[supplierAddress].violations.push(violation);
+
+        if (confirmDelivery) {
+            rawMaterailOrders[orderId].isDelivered = true;
+            rawMaterailOrders[orderId].quantityreceived = rawMaterailOrders[orderId].quantityOrdered;
+            rawMaterailOrders[orderId].arrivedAt = block.timestamp;
+        } else {
+            rawMaterailOrders[orderId].isCanceled = true;
+        }
+
+    }
+
+    function updateSupplierReliabilityOnQuantity(address supplierAddress, uint orderId, uint256 quantityreceived) external {
+        require(rawMaterailOrders[orderId].isDelivered, "Order not yet delivered");
+        
+        if (rawMaterailOrders[orderId].quantityOrdered < quantityreceived) {
+            rawMaterailOrders[orderId].quantityreceived = quantityreceived;
+
+            suppliers[supplierAddress].reliabilityRating = 0;
+            suppliers[supplierAddress].isFraud = "Under Review";
+
+            uint256 differenceQuantity = rawMaterailOrders[orderId].quantityOrdered - rawMaterailOrders[orderId].quantityreceived;
+
+            string memory violation = string(abi.encodePacked("Delivered quantity differs by  ", toString(differenceQuantity), " units from the ordered quantity."));
+            suppliers[supplierAddress].violations.push(violation);
         }
     }
+
+    function deleteSupplier(address supplierAddress) external onlyAdmin {
+        require(users[supplierAddress].isRegistered, "Supplier not found");
+        
+        suppliers[supplierAddress].isDeleted = true;
+    }
+
+
+    // admin update supplier
+    function updateSupplier(
+        address supplierAddress,
+        string memory name,
+        uint256 reliabilityRating,
+        string memory isFraud,
+        string memory place,
+        string memory emailAddress
+    ) external onlyAdmin {
+        require(users[supplierAddress].isRegistered == true, "Supplier not found");
+
+        suppliers[supplierAddress].name = name; 
+        suppliers[supplierAddress].place = place;
+        suppliers[supplierAddress].emailAddress = emailAddress;
+        
+        suppliers[supplierAddress].reliabilityRating = reliabilityRating;
+        suppliers[supplierAddress].isFraud = isFraud;
+    }
+
+    // admin confirm new price
+    event PriceUpdateConfirmed(uint256 indexed materialId, bool approved);
+
+    function confirmNewRawMaterialPrice(uint256 _id, bool _approve) public onlyAdmin {
+        require(_id > 0 && _id <= materialIdCounter, "Invalid material ID");
+
+        RawMaterial storage material = materials[_id];
+
+        require(material.reviewPriceUpdate > 0, "No price update pending review");
+
+        if (_approve == true) {
+            material.price = material.reviewPriceUpdate;
+        } 
+
+        // reset review fields whether approved or not
+        material.reviewPriceUpdate = 0;
+        material.reviewReason = "";
+        material.isAvailable = true;
+
+        emit PriceUpdateConfirmed(_id, _approve);
+    }
+
+
+    // update supplier Fraud status on quantity problem
+    event SupplierFraudStatusUpdated(address indexed supplier, bool isFraud, uint256 newReliabilityRating);
+
+    function setSupplierFraudStatus(address supplierAddress, bool isFraud, uint256 newReliabilityRating) public onlyAdmin {
+        require(users[supplierAddress].isRegistered == true, "Supplier does not exist");
+
+        if (isFraud == true) {
+            suppliers[supplierAddress].isFraud = "Fraud"; // Mark as Fraud
+        } else {
+            suppliers[supplierAddress].isFraud = "Reliable"; // Reset to Reliable
+        }
+
+        // new reliability rating
+        suppliers[supplierAddress].reliabilityRating = newReliabilityRating;
+
+        emit SupplierFraudStatusUpdated(supplierAddress, isFraud, newReliabilityRating);
+    }
+
 
 
     // raw material
@@ -435,8 +746,14 @@ contract Transactions {
         string name;
         string description;
         uint256 price; // usd
-        uint256 quantityAvaible;
+        uint256 quantityAvailable;
+        uint256 reviewPriceUpdate;
+        bool isAvailable;
         uint256 timestamp;
+        string updatePriceRaison;
+        uint256[] priceUpdateTimestamps; // track price update timestamps
+        string reviewReason; // reason for price review (HIGHER_PRICE / FREQUENT_UPDATES)
+        bool isDeleted;
     }
 
     modifier onlySupplier() {
@@ -450,17 +767,25 @@ contract Transactions {
 
     event MaterialAdded(uint256 indexed id, address indexed supplier);
     event MaterialUpdated(uint256 indexed id);
+    event PriceUpdateRequested(uint256 indexed id, uint256 oldPrice, uint256 newPrice, string reason);
+    event PriceUpdateApproved(uint256 indexed id, uint256 newPrice);
+    event PriceUpdateRejected(uint256 indexed id);
+
+    string constant HIGHER_PRICE = "HIGHER_PRICE";
+    string constant FREQUENT_UPDATES = "FREQUENT_UPDATES";
+    uint256 constant SIX_MONTHS = 180 days;
+    uint256 constant MAX_PRICE_UPDATES = 2;
 
     function addMaterial(
         string memory _name,
         string memory _description,
         uint256 _price,
-        uint256 _quantityAvaible
+        uint256 _quantityAvailable
     ) public onlySupplier returns (uint256) {
         require(bytes(_name).length > 0, "Name cannot be empty");
         require(bytes(_description).length > 0, "Description cannot be empty");
         require(_price > 0, "Price must be greater than 0");
-        require(_quantityAvaible > 0, "Quantity must be greater than 0");
+        require(_quantityAvailable > 0, "Quantity must be greater than 0");
 
         materialIdCounter++;
         
@@ -469,8 +794,14 @@ contract Transactions {
             name: _name,
             description: _description,
             price: _price,
-            quantityAvaible: _quantityAvaible,
-            timestamp: block.timestamp
+            quantityAvailable: _quantityAvailable,
+            reviewPriceUpdate: 0,
+            isAvailable: true,
+            timestamp: block.timestamp,
+            updatePriceRaison: "",
+            priceUpdateTimestamps: new uint256[](0),
+            reviewReason: "",
+            isDeleted: false
         });
 
         supplierToMaterials[msg.sender].push(materialIdCounter);
@@ -480,32 +811,66 @@ contract Transactions {
         return materialIdCounter;
     }
 
+    // update row material 
     function updateMaterial(
         uint256 _id,
         string memory _name,
         string memory _description,
         uint256 _price,
-        uint256 _quantityAvaible
+        uint256 _quantityAvailable,
+        string memory updatePriceRaison
     ) public onlySupplier {
         require(_id > 0 && _id <= materialIdCounter, "Invalid material ID");
         require(isMaterialOwner(_id), "Not the material owner");
         require(bytes(_name).length > 0, "Name cannot be empty");
         require(bytes(_description).length > 0, "Description cannot be empty");
         require(_price > 0, "Price must be greater than 0");
-        require(_quantityAvaible > 0, "Quantity must be greater than 0");
+        require(_quantityAvailable > 0, "Quantity must be greater than 0");
 
         RawMaterial storage material = materials[_id];
-        
+    
+        // Check if price is being updated
+        if (_price != material.price) {
+            material.updatePriceRaison = updatePriceRaison;
+            
+            // Check frequency of price updates
+            if (hasTooManyPriceUpdates(material)) {
+                material.isAvailable = false;
+                material.reviewPriceUpdate = _price;
+                material.reviewReason = FREQUENT_UPDATES;
+                
+                emit PriceUpdateRequested(_id, material.price, _price, FREQUENT_UPDATES);
+                return;
+            }
+
+            // Check if price is higher than other materials
+            bool isPriceValid = validateNewPrice(_name, _price);
+            if (!isPriceValid) {
+                material.isAvailable = false;
+                material.reviewPriceUpdate = _price;
+                material.reviewReason = HIGHER_PRICE;
+                emit PriceUpdateRequested(_id, material.price, _price, HIGHER_PRICE);
+                return;
+            }
+
+        }
+
+        // Update material if all validations pass
         material.name = _name;
         material.description = _description;
         material.price = _price;
-        material.quantityAvaible = _quantityAvaible;
+        material.quantityAvailable = _quantityAvailable;
         material.timestamp = block.timestamp;
+        // Add timestamp for this price update
+        material.priceUpdateTimestamps.push(block.timestamp);
         
         emit MaterialUpdated(_id);
     }
 
-    function getMaterial(uint256 _id) public view returns (RawMaterial memory) {
+
+
+
+    function getMaterialById(uint256 _id) public view returns (RawMaterial memory) {
         require(_id > 0 && _id <= materialIdCounter, "Invalid material ID");
         return materials[_id];
     }
@@ -540,15 +905,12 @@ contract Transactions {
         return result;
     }
 
-    function isMaterialOwner(uint256 _id) internal view returns (bool) {
-        uint256[] storage supplierMaterials = supplierToMaterials[msg.sender];
-        for (uint256 i = 0; i < supplierMaterials.length; i++) {
-            if (supplierMaterials[i] == _id) {
-                return true;
-            }
-        }
-        return false;
+    function deleteRawMaterial(address rawMaterialAddress, uint256 _materialIdCounter) external onlyAdmin {
+        require(users[rawMaterialAddress].isRegistered, "Distributor not found");
+        
+        materials[_materialIdCounter].isDeleted = true;
     }
+
 
     // order raw material
     struct OrderRawMaterial {
@@ -561,7 +923,8 @@ contract Transactions {
 
         string materialName;
         string materialId;
-        uint256 quantity;
+        uint256 quantityOrdered;
+        uint256 quantityreceived;
         uint256 price;
 
         uint256 shippedAt;
@@ -570,6 +933,7 @@ contract Transactions {
 
         bool isShipped;
         bool isDelivered;
+        bool isCanceled;
     }
 
     uint private orderRawMaterialCounter;
@@ -587,7 +951,7 @@ contract Transactions {
         string memory manufacturerName,
         string memory materialName,
         string memory materialId,
-        uint256 quantity,
+        uint256 quantityOrdered,
         uint256 price,
         uint256 shouldArriveAt
     ) external {
@@ -600,13 +964,15 @@ contract Transactions {
             manufacturerName: manufacturerName,
             materialName: materialName,
             materialId: materialId,
-            quantity: quantity,
+            quantityOrdered: quantityOrdered,
+            quantityreceived: 0,
             price: price,
             shippedAt: 0,
             shouldArriveAt: shouldArriveAt,
             arrivedAt: 0,
             isShipped: false,
-            isDelivered: false
+            isDelivered: false,
+            isCanceled: false
         });
         manufacturerOrders[manufacturerAddress].push(orderRawMaterialCounter);
         emit RawMaterialOrderCreated(orderRawMaterialCounter, manufacturerAddress, supplierAddress);
@@ -623,11 +989,93 @@ contract Transactions {
         require(rawMaterailOrders[orderId].isShipped, "Not yet shipped");
         require(!rawMaterailOrders[orderId].isDelivered, "Already delivered");
         rawMaterailOrders[orderId].isDelivered = true;
+        rawMaterailOrders[orderId].quantityreceived = rawMaterailOrders[orderId].quantityOrdered;
         rawMaterailOrders[orderId].arrivedAt = block.timestamp;
         emit RawMaterialOrderDelivered(orderId);
     }
 
     function getAllManufacturerRawMaterials(address manufacturer) external view returns (uint[] memory) {
         return manufacturerOrders[manufacturer];
+    }
+
+
+
+
+    // helpers functions 
+    // validators
+    function validateNewPrice(string memory _name, uint256 _newPrice) internal view returns (bool) {
+        for (uint256 i = 1; i <= materialIdCounter; i++) {
+            if (keccak256(bytes(materials[i].name)) == keccak256(bytes(_name)) && 
+                !materials[i].isDeleted && 
+                materials[i].isAvailable) {
+                if (_newPrice > materials[i].price) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    function hasTooManyPriceUpdates(RawMaterial storage material) internal view returns (bool) {
+        uint256 updateCount = 0;
+        uint256 sixMonthsAgo = block.timestamp - SIX_MONTHS;
+
+        for (uint256 i = 0; i < material.priceUpdateTimestamps.length; i++) {
+            if (material.priceUpdateTimestamps[i] > sixMonthsAgo) {
+                updateCount++;
+                if (updateCount >= MAX_PRICE_UPDATES) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+
+    // check if he is the material owner
+    function isMaterialOwner(uint256 _id) internal view returns (bool) {
+        // Get the array of materials owned by the message sender
+        uint256[] storage supplierMaterials = supplierToMaterials[msg.sender];
+        for (uint256 i = 0; i < supplierMaterials.length; i++) {
+            if (supplierMaterials[i] == _id) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Helper function to convert uint to string
+    function toString(uint256 value) internal pure returns (string memory) {
+        if (value == 0) {
+            return "0";
+        }
+        
+        uint256 temp = value;
+        uint256 digits;
+        while (temp != 0) {
+            digits++;
+            temp /= 10;
+        }
+        
+        bytes memory buffer = new bytes(digits);
+        while (value != 0) {
+            digits--;
+            buffer[digits] = bytes1(uint8(48 + uint256(value % 10)));
+            value /= 10;
+        }
+        
+        return string(buffer);
+    }
+
+    // Helper function to get review reason (for admin interface)
+    function getReviewReason(uint256 _id) public view returns (string memory) {
+        require(_id > 0 && _id <= materialIdCounter, "Invalid material ID");
+        return materials[_id].reviewReason;
+    }
+
+
+    // create hash from order details
+    function createProductHash(uint256 quantity, uint256 createdAt, uint256 producedAt, uint256 shippedAt) internal pure returns (uint256) {
+        return uint256(keccak256(abi.encodePacked(quantity, createdAt, producedAt, shippedAt)));
     }
 }

@@ -11,7 +11,7 @@ export default function useGetAllSuppliers() {
   const fetchSuppliers = async () => {
     try {
       if (!window.ethereum) {
-        alert("Veuillez installer MetaMask !");
+        alert("Please install MetaMask!");
         return;
       }
 
@@ -20,17 +20,17 @@ export default function useGetAllSuppliers() {
 
       const contract = await createEthereumContract();
       if (!contract) {
-        setError("Erreur de connexion au contrat");
+        setError("Error connecting to the contract");
         return;
       }
 
       const data = await contract.getAllSuppliers();
 
-      const formattedSuppliers = data[0].map((_, index) => ({
-        address: data[0][index],
+      const formattedSuppliers = data[0].map((address, index) => ({
+        address,
         name: data[1][index],
-        rating: data[2][index].toString(),
-        isFraud: data[3][index],
+        reliabilityRating: data[2][index].toString(),
+        fraudStatus: data[3][index],
         place: data[4][index],
         email: data[5][index],
         violations: data[6][index],
@@ -38,8 +38,8 @@ export default function useGetAllSuppliers() {
 
       setSuppliers(formattedSuppliers);
     } catch (err) {
-      console.error("Erreur lors de la récupération des fournisseurs :", err);
-      setError("Impossible de charger les fournisseurs.");
+      console.error("Error fetching suppliers:", err);
+      setError("Failed to fetch suppliers.");
     } finally {
       setLoading(false);
     }
@@ -49,5 +49,5 @@ export default function useGetAllSuppliers() {
     fetchSuppliers();
   }, []);
 
-  return { suppliers, loading, error, refreshSuppliers: fetchSuppliers };
+  return { suppliers, loading, error, fetchSuppliers };
 }

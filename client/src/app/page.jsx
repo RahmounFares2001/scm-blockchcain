@@ -60,11 +60,11 @@ export default function Home() {
   return (
     <section className="bg-primary" >
     
-      {/* <HomeHeader />
+      <HomeHeader />
       <Hero />
       <Features />
       <Contact />
-      <HomeFooter /> */}
+      <HomeFooter />
     </section>
   );
 }
