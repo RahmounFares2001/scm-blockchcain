@@ -17,6 +17,10 @@ import {
     TableHeader,
     TableRow,
   } from "@/components/ui/table"
+import { useDispatch, useSelector } from "react-redux";
+import { setUi } from "@/app/globalRedux/features/ui/uiSlice";
+import UpdateSupplierForm from "./UpdateSupplierForm";
+import { useState } from "react";
 
   
  
@@ -25,20 +29,39 @@ import {
      // get suppliers
   const { suppliers, loading, error, refreshSuppliers } = useGetAllSuppliers();
 
-  const invoices = suppliers.map((supplier) => ({
+  const data = suppliers.map((supplier) => ({
+    address: supplier.address,
     name: supplier.name,
     emailAddress: supplier.email,
     reliability: supplier.rating,
-    isFraud: supplier.isFraud ? "Fraud" : "Trusted",
+    isFraud: supplier.isFraud,
     place: supplier.place,
   }));
+
+
+  // redux 
+  const dispatch = useDispatch();
+  
+  const showUpdateSupplierForm = useSelector((state)=> state.ui.showUpdateSupplierForm);
+
+
+  const [ UpdateSupplierData, setUpdateSupplierData] = useState(
+    {
+      supplierAddress: "",
+      oldName: "",
+      oldReliabilityRating: 0,
+      oldIsFraud: "",
+      oldPlace: "",
+      oldEmailAddress: ""
+    }
+  );
 
     return (
       <>
       <div className="w-full flex" >
         <button className="px-6 py-1 bg-primary text-gray-100 rounded-md hover:bg-primary/90
                 flex justify-center items-center gap-3"
-                onClick={()=> {refreshSuppliers()}} >
+                onClick={()=> {refreshSuppliers}} >
             Refresh Suppliers
             <FiRefreshCcw />
         </button>
@@ -48,27 +71,54 @@ import {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[100px]">Name</TableHead>
+            <TableHead>Name</TableHead>
             <TableHead>Email Address</TableHead>
             <TableHead>Reliability Rating</TableHead>
             <TableHead>Is Fraud</TableHead>
-            <TableHead className="text-right">Place</TableHead>
+            <TableHead>Place</TableHead>
+            <TableHead className="text-center">Action</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {invoices.map((invoice) => (
-            <TableRow key={invoice.invoice}>
-              <TableCell className="font-medium">{invoice.name}</TableCell>
-              <TableCell>{invoice.emailAddress}</TableCell>
-              <TableCell>{invoice.reliability}</TableCell>
-              <TableCell>{invoice.isFraud}</TableCell>
-              <TableCell className="text-right">{invoice.place}</TableCell>
+          {data.map((item) => (
+            <TableRow key={item.item}>
+              <TableCell className="font-medium">{item.name}</TableCell>
+              <TableCell>{item.emailAddress}</TableCell>
+              <TableCell className={`${item.reliability > 3 ? "text-green-700" : 
+                       "text-red-700"} font-bold`} >
+                      {item.reliability}
+              </TableCell>
+              
+              <TableCell className={`${item.isFraud == "Reliable" ? "text-green-700" : 
+                      item.isFraud == "Fraud" ? "text-red-700": "text-yellow-700"} font-bold`}
+                       >{item.isFraud}
+              </TableCell>
+                       
+              <TableCell >{item.place}</TableCell>
+
+              <TableCell className="text-center">
+                <button className="px-5 py-1 bg-green-700 rounded-lg
+                      hover:bg-green-600"
+                      onClick={()=> {
+                        dispatch(setUi({key:"showUpdateSupplierForm", value: true}));
+                        setUpdateSupplierData(prevData =>  ({
+                          ...prevData,
+                          supplierAddress: item.address,
+                          oldName: item.name,
+                          oldReliabilityRating: item.reliability,
+                          oldIsFraud: item.isFraud,
+                          oldPlace: item.place,
+                          oldEmailAddress: item.emailAddress
+                        }))}} >
+                    Update
+                </button>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
         <TableFooter>
           <TableRow>
-            <TableCell colSpan={3}>Page 1/1</TableCell>
+            <TableCell colSpan={6}>Page 1/1</TableCell>
             <TableCell className="text-right pt-3">
                 <div className="flex gap-5 justify-end items-center
                             pt-3" >
@@ -78,47 +128,19 @@ import {
             </TableCell>
           </TableRow>
         </TableFooter>
-      </Table>}      </>
+      </Table>}      
+      
+      {showUpdateSupplierForm &&
+        <div className="fixed top-0 left-0 w-full h-full flex justify-center items-center overflow-auto" >
+            <UpdateSupplierForm UpdateSupplierData={UpdateSupplierData} />
+
+            <div className="fixed top-0 left-0 w-full h-full bg-black/90 z-30"
+                        onClick={()=> {dispatch(setUi({key:"showUpdateSupplierForm", value: false}))}} >
+            </div>
+
+        </div> }
+      </>
 
     )
   }
   
-
-
-
-  // {
-  //   invoice: "INV002",
-  //   paymentStatus: "Pending",
-  //   totalAmount: "$150.00",
-  //   paymentMethod: "PayPal",
-  // },
-  // {
-  //   invoice: "INV003",
-  //   paymentStatus: "Unpaid",
-  //   totalAmount: "$350.00",
-  //   paymentMethod: "Bank Transfer",
-  // },
-  // {
-  //   invoice: "INV004",
-  //   paymentStatus: "Paid",
-  //   totalAmount: "$450.00",
-  //   paymentMethod: "Credit Card",
-  // },
-  // {
-  //   invoice: "INV005",
-  //   paymentStatus: "Paid",
-  //   totalAmount: "$550.00",
-  //   paymentMethod: "PayPal",
-  // },
-  // {
-  //   invoice: "INV006",
-  //   paymentStatus: "Pending",
-  //   totalAmount: "$200.00",
-  //   paymentMethod: "Bank Transfer",
-  // },
-  // {
-  //   invoice: "INV007",
-  //   paymentStatus: "Unpaid",
-  //   totalAmount: "$300.00",
-  //   paymentMethod: "Credit Card",
-  // },

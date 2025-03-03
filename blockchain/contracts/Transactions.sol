@@ -110,25 +110,31 @@ contract Transactions {
 
     function createOrder(
         address _manufacturerAddress,
-        string memory _manufacturerName,
         address _distributorAddress,
-        string memory _distributorName,
         string memory _productName,
         uint256 _productQuantity
     ) external onlyAdmin {
+
+        // Fetch manufacturer
+        ManufacturerDetails memory manufacturer = getManufacturerByAddress(_manufacturerAddress);
+        require(_manufacturerAddress != address(0), "Manufacturer does not exist");
+
+        // Fetch distributor
+        DistributorDetails memory distributor = getDistributorByAddress(_distributorAddress);
+        require(_distributorAddress != address(0), "Distributor does not exist");
+
         orderCounter++;
-        
 
         orders[orderCounter] = Order({
             id: orderCounter,
             manufacturerAddress: _manufacturerAddress,
-            manufacturerName: _manufacturerName,
+            manufacturerName: manufacturer.name,
             isProduced: false,
             producedAt: 0,
             isShippedToDistributor: false,
             shippedToDistributorAt: 0,
             distributorAddress: _distributorAddress,
-            distributorName: _distributorName,
+            distributorName: distributor.name,
             isArrivedToDistributor: false,
             arrivedToDistributorAt: 0,
             productName: _productName,
@@ -743,6 +749,7 @@ contract Transactions {
     // raw material
     struct RawMaterial {
         uint256 id;
+        address supplierAddress;
         string name;
         string description;
         uint256 price; // usd
@@ -791,6 +798,7 @@ contract Transactions {
         
         materials[materialIdCounter] = RawMaterial({
             id: materialIdCounter,
+            supplierAddress: msg.sender,
             name: _name,
             description: _description,
             price: _price,
@@ -946,22 +954,29 @@ contract Transactions {
 
     function createOrderRawMaterial(
         address supplierAddress,
-        string memory supplierName,
         address manufacturerAddress,
-        string memory manufacturerName,
         string memory materialName,
         string memory materialId,
         uint256 quantityOrdered,
         uint256 price,
         uint256 shouldArriveAt
     ) external {
+        // Fetch supplier
+        SupplierDetails memory supplier = getSupplierByAddress(supplierAddress);
+        require(supplierAddress != address(0), "Supplier does not exist");
+
+        // Fetch manufacturer
+        ManufacturerDetails memory manufacturer = getManufacturerByAddress(manufacturerAddress);
+        require(manufacturerAddress != address(0), "Manufacturer does not exist");
+
+
         orderRawMaterialCounter++;
         rawMaterailOrders[orderRawMaterialCounter] = OrderRawMaterial({
             id: orderRawMaterialCounter,
             supplierAddress: supplierAddress,
-            supplierName: supplierName,
+            supplierName: supplier.name,
             manufacturerAddress: manufacturerAddress,
-            manufacturerName: manufacturerName,
+            manufacturerName: manufacturer.name,
             materialName: materialName,
             materialId: materialId,
             quantityOrdered: quantityOrdered,
@@ -997,6 +1012,7 @@ contract Transactions {
     function getAllManufacturerRawMaterials(address manufacturer) external view returns (uint[] memory) {
         return manufacturerOrders[manufacturer];
     }
+
 
 
 

@@ -10,9 +10,7 @@ export default function useCreateOrder() {
 
   const createOrder = async (
     manufacturerAddress,
-    manufacturerName,
     distributorAddress,
-    distributorName,
     productName,
     productQuantity
   ) => {
@@ -34,9 +32,7 @@ export default function useCreateOrder() {
 
       const tx = await contract.createOrder(
         manufacturerAddress,
-        manufacturerName,
         distributorAddress,
-        distributorName,
         productName,
         productQuantity
       );

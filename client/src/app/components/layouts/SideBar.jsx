@@ -45,12 +45,12 @@ export default function SideBar() {
             {(showSideBar && data.title != undefined) && <h1 className='text-gray-500 text-xs my-5' >{data.title}</h1>}
 
             <Link href={data.href} className={`flex gap-3 items-center cursor-pointer group
-                       ${data.activeName === pagePart?.toLowerCase() ? 'text-white' : ''}`} >
+                       ${data.activeName === pagePart ? 'text-white' : ''}`} >
               {React.cloneElement(data.icon, { 
-                className: `${data.activeName === pagePart?.toLowerCase() ?
+                className: `${data.activeName === pagePart ?
                        'text-white' : 'text-gray-400'} text-2xl group-hover:text-white` })}
 
-              {showSideBar && <h1 className={`${data.activeName === pagePart?.toLowerCase() ?
+              {showSideBar && <h1 className={`${data.activeName === pagePart ?
                        'text-white' : 'text-gray-400'} group-hover:text-white`} >{data.name}</h1>}
             </Link>
           </div>

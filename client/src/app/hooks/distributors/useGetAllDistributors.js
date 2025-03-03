@@ -9,6 +9,11 @@ const useGetAllDistributors = () => {
 
   const fetchDistributors = async () => {
     try {
+      if (!window.ethereum) {
+        alert("Please install MetaMask!");
+        return;
+      }
+
       setLoading(true);
       setError(null);
 

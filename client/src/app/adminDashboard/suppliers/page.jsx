@@ -32,13 +32,17 @@ export default function page() {
         Suppliers
       </h1>
 
-      <Link href="/adminDashboard/addSupplier" 
-          className='w-full flex justify-between items-center' >
-        <h1 className='text-xl' >Suppliers</h1>
-        <button className='px-10 py-2 border bg-primary hover:bg-green-800 
-            text-white font-bold text-sm rounded-lg shadow-md shadow-gray-300'
-              onClick={()=> {dispatch(setUi({key: "showAddSupplierForm", value: true}))}}  >Add Supplier</button>
-      </Link>
+      <div className='flex justify-between items-center' >
+          <h1 className='text-xl' >Suppliers</h1>      
+
+          <Link href="/adminDashboard/addSupplier" >
+            <button href='/adminDashboard/manufactories'
+                className='px-10 py-2 border bg-primary hover:bg-green-800 
+                text-white font-bold text-sm rounded-lg shadow-md shadow-gray-300'   >
+                    Add Supplier
+          </button>
+        </Link>
+      </div>
 
       {/* table */}
       <div className='bg-white px-5 py-5 flex flex-col gap-5 rounded-lg

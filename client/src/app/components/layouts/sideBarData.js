@@ -43,22 +43,22 @@ const sideBarData = [
     {
       id: 3,
       title: undefined,
-      name: "Raw materiel",
-      activeName: "rawMaterial",
+      name: "Raw materiels",
+      activeName: "rawMaterials",
       icon: <LiaTruckLoadingSolid />,
-      href: '/adminDashboard/rawMaterial'
+      href: '/adminDashboard/rawMaterials'
     },
     ,
+    // {
+    //   id: 4,
+    //   title: undefined,
+    //   name: "Add Raw materiel",
+    //   activeName: "addRawMaterial",
+    //   icon: <CgPlayListAdd />,
+    //   href: '/adminDashboard/addRawMaterial'
+    // },
     {
       id: 4,
-      title: undefined,
-      name: "Add Raw materiel",
-      activeName: "addRawMaterial",
-      icon: <CgPlayListAdd />,
-      href: '/adminDashboard/addRawMaterial'
-    },
-    {
-      id: 5,
       title: "MANUFACT",
       name: "Manufactories",
       activeName: "manufactories",
@@ -67,7 +67,7 @@ const sideBarData = [
     },
     ,
     {
-      id: 6,
+      id: 5,
       title: undefined,
       name: "Add Manufacturer",
       activeName: "addManufacturer",
@@ -75,7 +75,7 @@ const sideBarData = [
       href: '/adminDashboard/addManufacturer'
     },
     {
-      id: 7,
+      id: 6,
       title: "DELIVERY",
       name: "Distributors",
       activeName: "distributors",
@@ -84,7 +84,7 @@ const sideBarData = [
     },
     ,
     {
-      id: 8,
+      id: 7,
       title: undefined,
       name: "Add Distributor",
       activeName: "addDistributor",
@@ -92,7 +92,7 @@ const sideBarData = [
       href: '/adminDashboard/addDistributor'
     },
     {
-      id: 9,
+      id: 8,
       title: "ORDERS",
       name: "Product orders",
       activeName: "productOrders",
@@ -101,7 +101,7 @@ const sideBarData = [
     },
     ,
     {
-      id: 10,
+      id: 9,
       title: undefined,
       name: "Add order",
       activeName: "addOrder",
@@ -109,7 +109,23 @@ const sideBarData = [
       href: '/adminDashboard/addOrder'
     },
     {
-      id: 7,
+      id: 10,
+      title: undefined,
+      name: "Material Orders",
+      activeName: "materialOrders",
+      icon: <LiaTruckLoadingSolid />,
+      href: '/adminDashboard/materialOrders'
+    },
+    {
+      id: 11,
+      title: undefined,
+      name: "Add Material order",
+      activeName: "addMaterialOrder",
+      icon: <BiCartAdd />,
+      href: '/adminDashboard/addMaterialOrder'
+    },
+    {
+      id: 12,
       title: "TRACABLITY",
       name: "All Products Stages",
       activeName: "productsStages",
@@ -117,7 +133,7 @@ const sideBarData = [
       href: '/adminDashboard/productsStages'
     },
     {
-      id: 8,
+      id: 13,
       title: undefined,
       name: "Track Product",
       activeName: "trackProduct",

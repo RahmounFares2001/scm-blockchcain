@@ -10,9 +10,7 @@ export default function useCreateRawMaterialOrder() {
 
   const createOrderRawMaterial = async (
     supplierAddress,
-    supplierName,
     manufacturerAddress,
-    manufacturerName,
     materialName,
     materialId,
     quantityOrdered,
@@ -33,9 +31,7 @@ export default function useCreateRawMaterialOrder() {
 
       const tx = await contract.createOrderRawMaterial(
         supplierAddress,
-        supplierName,
         manufacturerAddress,
-        manufacturerName,
         materialName,
         materialId,
         quantityOrdered,
