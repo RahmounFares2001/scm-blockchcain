@@ -544,6 +544,11 @@ contract Transactions {
         bool isDeleted;
     }
 
+    struct RawMaterialWithSupplier {
+        RawMaterial material;
+        SupplierDetails supplier;
+    }
+
     mapping(address => SupplierDetails) public suppliers;
     address[] public supplierAddresses;
 
@@ -883,18 +888,24 @@ contract Transactions {
         return materials[_id];
     }
 
-    function getAllMaterials() public view returns (RawMaterial[] memory) {
-        RawMaterial[] memory allMaterials = new RawMaterial[](materialIdCounter);
+    function getAllMaterials() public view returns (RawMaterialWithSupplier[] memory) {
+        RawMaterialWithSupplier[] memory allMaterials = new RawMaterialWithSupplier[](materialIdCounter);
         uint256 validCount = 0;
 
         for (uint256 i = 1; i <= materialIdCounter; i++) {
             if (materials[i].id != 0) {  // Check if material exists
-                allMaterials[validCount] = materials[i];
+                SupplierDetails memory supplier = getSupplierByAddress(materials[i].supplierAddress);
+
+                // new struct: material and supplier
+                allMaterials[validCount] = RawMaterialWithSupplier({
+                    material: materials[i],
+                    supplier: supplier
+                });
                 validCount++;
             }
         }
 
-        RawMaterial[] memory result = new RawMaterial[](validCount);
+        RawMaterialWithSupplier[] memory result = new RawMaterialWithSupplier[](validCount);
         for (uint256 i = 0; i < validCount; i++) {
             result[i] = allMaterials[i];
         }

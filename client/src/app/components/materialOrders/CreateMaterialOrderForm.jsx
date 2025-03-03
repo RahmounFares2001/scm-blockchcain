@@ -1,25 +1,16 @@
 "use client";
 
 import { useFormik } from 'formik';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import * as Yup from 'yup';
 
 // hooks
 import useCreateRawMaterialOrder from '@/app/hooks/suppliers/useCreateRawMaterialOrder';
-import useGetAllMaterials from '@/app/hooks/suppliers/useGetAllMaterials';
 
-
-export default function CreateRawMaterialOrderForm() {
+export default function CreateRawMaterialOrderForm({ data: clickedData }) {
   const { createOrderRawMaterial, loading } = useCreateRawMaterialOrder();
-  const { materials, loading: materialsLoading, error: materialsError } = useGetAllMaterials();
-  const [selectedMaterial, setSelectedMaterial] = useState(null);
 
-  // Filter available materials
-  const availableMaterials = materials.filter(material => 
-    material.quantityAvailable > 0 && !material.isDeleted && material.isAvailable
-  );
-
-  // Validation 
+  // Validation schema
   const validationSchema = Yup.object({
     supplierAddress: Yup.string()
       .required('Supplier Address is required')
@@ -27,65 +18,59 @@ export default function CreateRawMaterialOrderForm() {
     manufacturerAddress: Yup.string()
       .required('Manufacturer Address is required')
       .matches(/^0x[a-fA-F0-9]{40}$/, 'Invalid Ethereum address'),
-    materialId: Yup.string()
-      .required('Material selection is required'),
     quantityOrdered: Yup.number()
       .required('Quantity Ordered is required')
-      .positive('Must be positive number')
-      .test('max-quantity', 'Exceeds available quantity', function(value) {
-        return selectedMaterial ? value <= selectedMaterial.quantityAvailable : false;
-      }),
+      .positive('Must be a positive number')
+      .max(
+        clickedData?.material.quantityAvailable || 0,
+        'Exceeds available quantity'
+      ),
     shouldArriveAt: Yup.string()
-      .required('Arrival Date is required')
+      .required('Arrival Date is required'),
   });
 
-  // Formik 
+  // Formik setup
   const formik = useFormik({
     initialValues: {
-      supplierAddress: '',
+      supplierAddress: clickedData?.material.supplierAddress || '',
       manufacturerAddress: '',
-      materialId: '',
-      materialPrice: '',
       quantityOrdered: '',
-      shouldArriveAt: ''
+      shouldArriveAt: '',
     },
     validationSchema,
     onSubmit: async (values, actions) => {
       const success = await createOrderRawMaterial(
         values.supplierAddress,
         values.manufacturerAddress,
-        selectedMaterial.name,
-        selectedMaterial.id.toString(),
+        clickedData.material.name,
+        clickedData.material.id.toString(),
         values.quantityOrdered,
-        selectedMaterial.price,
+        clickedData.material.price,
         Math.floor(new Date(values.shouldArriveAt).getTime() / 1000)
       );
-      
+
       if (success) {
         alert('Raw material order created successfully!');
         actions.resetForm();
-        setSelectedMaterial(null);
       }
     },
   });
 
-  // Handle material selection
+  // Pre-fill supplier address if available
   useEffect(() => {
-    if (formik.values.materialId) {
-      const material = availableMaterials.find(m => m.id.toString() === formik.values.materialId);
-      setSelectedMaterial(material);
-      formik.setFieldValue('materialPrice', material?.price || '');
+    if (clickedData) {
+      formik.setFieldValue('supplierAddress', clickedData.material.supplierAddress);
     }
-  }, [formik.values.materialId]);
+  }, [clickedData]);
 
   return (
-    <div className='flex flex-col justify-center items-center gap-5 h-max'>
+    <div className='flex flex-col justify-center items-center gap-5 h-max w-1/2 z-50 bg-white px-10 py-8 rounded-lg'>
       <form
         autoComplete='off'
         onSubmit={formik.handleSubmit}
         className='w-full flex flex-col gap-5 text-sm'
       >
-        {/* Supplier Address */}
+        {/* Supplier Address (disabled) */}
         <div className='w-full flex flex-col gap-2'>
           <label htmlFor="supplierAddress">Supplier Address</label>
           <input
@@ -95,7 +80,8 @@ export default function CreateRawMaterialOrderForm() {
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
             placeholder='Supplier Address'
-            className='border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-gray-400 rounded-lg'
+            className='border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-gray-400 rounded-lg bg-gray-100'
+            disabled
           />
           {formik.touched.supplierAddress && formik.errors.supplierAddress && (
             <div className="text-red-500 text-sm">{formik.errors.supplierAddress}</div>
@@ -119,42 +105,15 @@ export default function CreateRawMaterialOrderForm() {
           )}
         </div>
 
-        {/* Material Selection */}
-        <div className='w-full flex flex-col gap-2'>
-          <label htmlFor="materialId">Select Material</label>
-          <select
-            name='materialId'
-            value={formik.values.materialId}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            className='border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-gray-400 rounded-lg'
-            disabled={materialsLoading || materialsError}
-          >
-            <option value="">Select a Material</option>
-            {availableMaterials.map((material) => (
-              <option key={material.id} value={material.id}>
-                {material.name} (ID: {material.id}, Price: {material.price}, Available: {material.quantityAvailable})
-              </option>
-            ))}
-          </select>
-          {formik.touched.materialId && formik.errors.materialId && (
-            <div className="text-red-500 text-sm">{formik.errors.materialId}</div>
-          )}
-          {materialsError && (
-            <div className="text-red-500 text-sm">Error loading materials</div>
-          )}
-        </div>
-
-        {/* Material Price (Disabled) */}
-        {selectedMaterial && (
+        {/* Material Details (Read-only) */}
+        {clickedData && (
           <div className='w-full flex flex-col gap-2'>
-            <label>Unit Price</label>
-            <input
-              type="text"
-              value={selectedMaterial.price}
-              className='border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-gray-400 rounded-lg bg-gray-100'
-              disabled
-            />
+            <label>Material Details</label>
+            <div className='border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-gray-400 rounded-lg bg-gray-100'>
+              <p><strong>Name: </strong> {clickedData.material.name}</p>
+              <p><strong>Price: </strong> ${clickedData.material.price}</p>
+              <p><strong>Available Quantity: </strong> {clickedData.material.quantityAvailable}</p>
+            </div>
           </div>
         )}
 
@@ -169,21 +128,20 @@ export default function CreateRawMaterialOrderForm() {
             onBlur={formik.handleBlur}
             placeholder='Quantity Ordered'
             className='border border-gray-300 px-3 sm:px-4 py-2 sm:py-3 text-gray-400 rounded-lg'
-            disabled={!selectedMaterial}
           />
           {formik.touched.quantityOrdered && formik.errors.quantityOrdered && (
             <div className="text-red-500 text-sm">{formik.errors.quantityOrdered}</div>
           )}
-          {selectedMaterial && (
+          {clickedData && (
             <div className="text-sm text-gray-500">
-              Available: {selectedMaterial.quantityAvailable}
+              Available: {clickedData.material.quantityAvailable}
             </div>
           )}
         </div>
 
         {/* Arrival Date */}
         <div className='w-full flex flex-col gap-2'>
-          <label htmlFor="shouldArriveAt">Arrival Date</label>
+          <label htmlFor="shouldArriveAt">Arrival To Manufacturer At</label>
           <input
             type="date"
             name='shouldArriveAt'
@@ -201,7 +159,7 @@ export default function CreateRawMaterialOrderForm() {
         <div className='w-full flex justify-center items-center'>
           <button
             type='submit'
-            disabled={loading || materialsLoading || !formik.isValid}
+            disabled={loading || !formik.isValid}
             className='w-3/5 px-10 py-3 bg-primary text-gray-200 hover:bg-green-800 rounded-md shadow-md shadow-gray-400 disabled:bg-gray-400 disabled:cursor-not-allowed'
           >
             {loading ? 'Creating Order...' : 'Create Raw Material Order'}
