@@ -60,7 +60,6 @@ export function RawMaterialsTable() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>ID</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Description</TableHead>
               <TableHead>Price (USD)</TableHead>
@@ -74,7 +73,6 @@ export function RawMaterialsTable() {
           <TableBody>
             {materials.map((item) => (
               <TableRow key={item.id}>
-                <TableCell className="font-medium">{item.id}</TableCell>
                 <TableCell>{item.name}</TableCell>
                 <TableCell>{item.description}</TableCell>
                 <TableCell>${item.price}</TableCell>
@@ -117,7 +115,7 @@ export function RawMaterialsTable() {
           </TableBody>
           <TableFooter>
             <TableRow>
-              <TableCell colSpan={9}>Page 1/1</TableCell>
+              <TableCell colSpan={8}>Page 1/1</TableCell>
             </TableRow>
           </TableFooter>
         </Table>

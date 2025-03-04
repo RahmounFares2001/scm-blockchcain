@@ -1,17 +1,20 @@
 "use client";
 
 import { setUi } from "@/app/globalRedux/features/ui/uiSlice";
-import useUpdateSupplier from "@/app/hooks/suppliers/useUpdateSupplier";
 import { useFormik } from "formik";
+import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import * as Yup from "yup";
 
-export default function UpdateSupplierForm({UpdateSupplierData}) {
+// hooks
+import useUpdateSupplier from "@/app/hooks/suppliers/useUpdateSupplier";
+
+
+export default function UpdateSupplierForm({ data: clickedData }) {
   const dispatch = useDispatch();
-
-
   const { updateSupplier, loading, error, success } = useUpdateSupplier();
 
+  // Validation schema
   const validationSchema = Yup.object().shape({
     supplierAddress: Yup.string()
       .required("Supplier Address is required")
@@ -23,21 +26,24 @@ export default function UpdateSupplierForm({UpdateSupplierData}) {
       .max(5, "Maximum rating is 5"),
     isFraud: Yup.string().required("Status is required"),
     place: Yup.string().required("Place is required"),
-    emailAddress: Yup.string().email("Invalid email").required("Email is required"),
+    emailAddress: Yup.string()
+      .email("Invalid email")
+      .required("Email is required"),
   });
 
+  // Formik 
   const formik = useFormik({
     initialValues: {
-      supplierAddress: UpdateSupplierData.supplierAddress,
-      name: UpdateSupplierData.oldName,
-      reliabilityRating: UpdateSupplierData.oldReliabilityRating,
-      isFraud: UpdateSupplierData.oldIsFraud,
-      place: UpdateSupplierData.oldPlace,
-      emailAddress: UpdateSupplierData.oldEmailAddress,
+      supplierAddress: clickedData?.supplierAddress || "",
+      name: clickedData?.name || "",
+      reliabilityRating: clickedData?.reliabilityRating || 1,
+      isFraud: clickedData?.isFraud || "Reliable",
+      place: clickedData?.place || "",
+      emailAddress: clickedData?.emailAddress || "",
     },
     validationSchema,
     onSubmit: async (values, { resetForm }) => {
-      await updateSupplier(
+      const success = await updateSupplier(
         values.supplierAddress,
         values.name,
         values.reliabilityRating,
@@ -45,20 +51,35 @@ export default function UpdateSupplierForm({UpdateSupplierData}) {
         values.place,
         values.emailAddress
       );
-      dispatch(setUi({key: "showUpdateSupplierForm", value: false}));
-      if (success) resetForm();
 
+      if (success) {
+        resetForm();
+        dispatch(setUi({ key: "showUpdateSupplierForm", value: false }));
+      }
     },
   });
 
+  // Pre-fill form fields if clickedData changes
+  useEffect(() => {
+    if (clickedData) {
+      formik.setValues({
+        supplierAddress: clickedData.supplierAddress,
+        name: clickedData.name,
+        reliabilityRating: clickedData.reliabilityRating,
+        isFraud: clickedData.isFraud,
+        place: clickedData.place,
+        emailAddress: clickedData.emailAddress,
+      });
+    }
+  }, [clickedData]);
+
   return (
-    <div className="bg-white w-2/6 px-10 py-8 rounded shadow-md shadow-gray-400 z-50
-                    flex flex-col justify-center items-center gap-5 ">
-      <form onSubmit={formik.handleSubmit} className="w-full flex flex-col gap-5 text-sm" >
+    <div className="bg-white w-2/6 px-10 py-8 rounded shadow-md shadow-gray-400 z-50 flex flex-col justify-center items-center gap-5">
+      <form onSubmit={formik.handleSubmit} className="w-full flex flex-col gap-5 text-sm">
         <h1 className="font-bold">Update Supplier</h1>
 
-        {/* Supplier Address */}
-        {/* <div className="w-full flex flex-col gap-2">
+        {/* Supplier Address (disabled) */}
+        <div className="w-full flex flex-col gap-2">
           <label htmlFor="supplierAddress">Supplier Address</label>
           <input
             type="text"
@@ -67,12 +88,13 @@ export default function UpdateSupplierForm({UpdateSupplierData}) {
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
             placeholder="Enter Supplier Address"
-            className="border border-gray-300 px-3 py-2 rounded-lg"
+            className="border border-gray-300 px-3 py-2 rounded-lg bg-gray-100"
+            disabled
           />
           {formik.touched.supplierAddress && formik.errors.supplierAddress && (
             <p className="text-red-500 text-xs">{formik.errors.supplierAddress}</p>
           )}
-        </div> */}
+        </div>
 
         {/* Name */}
         <div className="w-full flex flex-col gap-2">
@@ -102,6 +124,7 @@ export default function UpdateSupplierForm({UpdateSupplierData}) {
             onBlur={formik.handleBlur}
             min="1"
             max="5"
+            placeholder="Enter Reliability Rating"
             className="border border-gray-300 px-3 py-2 rounded-lg"
           />
           {formik.touched.reliabilityRating && formik.errors.reliabilityRating && (

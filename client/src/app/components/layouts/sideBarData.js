@@ -118,14 +118,6 @@ const sideBarData = [
     },
     {
       id: 11,
-      title: undefined,
-      name: "Add Material order",
-      activeName: "addMaterialOrder",
-      icon: <BiCartAdd />,
-      href: '/adminDashboard/addMaterialOrder'
-    },
-    {
-      id: 12,
       title: "TRACABLITY",
       name: "All Products Stages",
       activeName: "productsStages",
@@ -133,7 +125,7 @@ const sideBarData = [
       href: '/adminDashboard/productsStages'
     },
     {
-      id: 13,
+      id: 12,
       title: undefined,
       name: "Track Product",
       activeName: "trackProduct",

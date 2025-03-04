@@ -57,7 +57,7 @@ import useGetAllMaterialOrders from "@/app/hooks/suppliers/useGetAllMaterialOrde
             <TableHead>Quantity Ordered</TableHead>
             <TableHead>Quantity Received</TableHead>
             <TableHead>Price</TableHead>
-            <TableHead>Status</TableHead>
+            <TableHead className="text-right" >Status</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -70,7 +70,7 @@ import useGetAllMaterialOrders from "@/app/hooks/suppliers/useGetAllMaterialOrde
               <TableCell>{item.quantityOrdered}</TableCell>
               <TableCell>{item.quantityReceived}</TableCell>
               <TableCell>{item.price}</TableCell>
-              <TableCell>
+              <TableCell className="text-right" >
                 {item.isCanceled ? (
                   <span className="text-red-500">Canceled</span>
                 ) : item.isDelivered ? (
@@ -86,7 +86,7 @@ import useGetAllMaterialOrders from "@/app/hooks/suppliers/useGetAllMaterialOrde
         </TableBody>
         <TableFooter>
           <TableRow>
-            <TableCell colSpan={8}>Page 1/1</TableCell>
+            <TableCell colSpan={7}>Page 1/1</TableCell>
             <TableCell className="text-right pt-3">
                 <div className="flex gap-5 justify-end items-center pt-3" >
                     <button className="w-24 py-1 border hover:bg-gray-200 rounded-md" >Previous</button>

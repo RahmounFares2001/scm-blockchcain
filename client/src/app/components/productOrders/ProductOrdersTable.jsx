@@ -64,7 +64,7 @@ import {
         </TableBody>
         <TableFooter>
           <TableRow>
-            <TableCell colSpan={7}>Page 1/1</TableCell>
+            <TableCell colSpan={6}>Page 1/1</TableCell>
             <TableCell className="text-right pt-3">
                 <div className="flex gap-5 justify-end items-center
                             pt-3" >
