@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { createEthereumContract } from "@/app/utils/constants";
 
-export default function useUpdateSupplierReliability() {
+export default function useUpdateSupplierReliabilityOnDelay() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);

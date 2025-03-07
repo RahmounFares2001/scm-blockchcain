@@ -25,7 +25,7 @@ export default function useShipRawMaterial() {
       await tx.wait(); 
 
       setSuccess(true);
-      console.log(`Order ${orderId} marked as shipped.`);
+      alert("Order marked as shipped")
     } catch (err) {
       console.error("Error shipping raw material:", err);
       setError("Failed to ship raw material order.");

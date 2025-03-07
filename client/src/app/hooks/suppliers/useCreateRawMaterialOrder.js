@@ -42,7 +42,7 @@ export default function useCreateRawMaterialOrder() {
       await tx.wait(); 
 
       setSuccess(true);
-      console.log(`Order for material ${materialName} created successfully.`);
+      alert("Order for material created successfully")
     } catch (err) {
       console.error("Error creating raw material order:", err);
       setError("Failed to create raw material order.");
