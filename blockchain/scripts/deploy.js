@@ -42,6 +42,12 @@ const main = async () => {
   const orderManagement2Contract = await OrderManagement2Factory.deploy(dataStructuresContract.address);
   await orderManagement2Contract.deployed();
   console.log("OrderManagement address: ", orderManagement2Contract.address);
+
+  // dashboard
+  const Dashboard2Factory = await hre.ethers.getContractFactory("Dashboard");
+  const dashboardContract = await Dashboard2Factory.deploy(dataStructuresContract.address);
+  await dashboardContract.deployed();
+  console.log("Dashboard address: ", dashboardContract.address);
 };
 
 const runMain = async () => {

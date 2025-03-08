@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { createEthereumContract } from "@/app/utils/constants";
 

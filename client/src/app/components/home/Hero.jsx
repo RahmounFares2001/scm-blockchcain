@@ -24,7 +24,7 @@ export default function Hero() {
       setCurrentAccount(accounts[0]);
 
       // Get user role from the smart contract
-      const contract = await createEthereumContract();
+      const contract = await createEthereumContract("UserManagement");
       const user = await contract.users(userAddress);
       const userRole = user.role; 
 
