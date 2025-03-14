@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { createEthereumContract } from "@/app/utils/constants";
 
-export default function useGetAllMaterialOrders() {
+export default function useGetAllMaterialsOrders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -18,37 +18,36 @@ export default function useGetAllMaterialOrders() {
       setLoading(true);
       setError(null);
 
-      const contract = await createEthereumContract();
+      // Connect to the contract
+      const contract = await createEthereumContract("SupplierManagement"); // Replace with the correct contract name
       if (!contract) {
         setError("Error connecting to the contract");
         return;
       }
 
+      // Fetch all raw material orders
       const data = await contract.getAllMaterialsOrders();
 
+      // Format the orders
       const formattedOrders = data.map((order) => ({
-        id: order.id.toNumber(),
+        id: order.id.toString(),
         supplierAddress: order.supplierAddress,
-        supplierName: order.supplierName,
         manufacturerAddress: order.manufacturerAddress,
-        manufacturerName: order.manufacturerName,
         materialName: order.materialName,
-        materialId: order.materialId.toString(),
-        quantityOrdered: order.quantityOrdered.toNumber(),
-        quantityReceived: order.quantityreceived.toNumber(),
-        price: order.price.toNumber(),
-        shippedAt: order.shippedAt.toNumber(),
-        shouldArriveAt: order.shouldArriveAt.toNumber(),
-        arrivedAt: order.arrivedAt.toNumber(),
-        isShipped: order.isShipped,
-        isDelivered: order.isDelivered,
-        isCanceled: order.isCanceled,
+        materialId: order.materialId,
+        quantityOrdered: order.quantityOrdered.toString(),
+        quantityReceived: order.quantityReceived.toString(),
+        price: order.price.toString(),
+        shippedAt: new Date(order.shippedAt * 1000).toLocaleString(), 
+        shouldArriveAt: new Date(order.shouldArriveAt * 1000).toLocaleString(),
+        arrivedAt: new Date(order.arrivedAt * 1000).toLocaleString(),
+        status: order.status,
       }));
 
       setOrders(formattedOrders);
     } catch (err) {
-      console.error("Error fetching material orders:", err);
-      setError("Failed to fetch material orders.");
+      console.error("Error fetching orders:", err);
+      setError("Failed to fetch orders.");
     } finally {
       setLoading(false);
     }

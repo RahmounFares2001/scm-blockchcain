@@ -21,7 +21,7 @@ const useGetMaterialOrderStatistics = () => {
       setLoading(true);
       setError(null);
 
-      const contract = await createEthereumContract();
+      const contract = await createEthereumContract("Dashboard");
       const [
         pending,
         shippedToManufacturer,
@@ -29,10 +29,10 @@ const useGetMaterialOrderStatistics = () => {
         canceled,
       ] = await contract.getMaterialOrderStatistics();
 
-      setPendingCount(pending.toNumber());
-      setShippedToManufacturerCount(shippedToManufacturer.toNumber());
-      setArrivedToManufacturerCount(arrivedToManufacturer.toNumber());
-      setCanceledCount(canceled.toNumber());
+      setPendingCount(Number(pending));
+      setShippedToManufacturerCount(Number(shippedToManufacturer));
+      setArrivedToManufacturerCount(Number(arrivedToManufacturer));
+      setCanceledCount(Number(canceled));
     } catch (err) {
       setError(err.message);
     } finally {

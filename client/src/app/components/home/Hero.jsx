@@ -20,15 +20,16 @@ export default function Hero() {
 
       const accounts = await ethereum.request({ method: "eth_requestAccounts", });
       const userAddress = accounts[0];
-
       setCurrentAccount(accounts[0]);
 
       // Get user role from the smart contract
-      const contract = await createEthereumContract("UserManagement");
-      const user = await contract.users(userAddress);
+      const contract = await createEthereumContract("DataStructures");
+      const user = await contract.getUser(userAddress);
       const userRole = user.role; 
+      const userisRegistered = user.isRegistered; 
 
       console.log("User role:", userRole);
+      console.log("userisRegistered:", userisRegistered);
 
       if (userRole === 0n) { // Role.ADMIN
         router.push('/adminDashboard');

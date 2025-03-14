@@ -41,7 +41,6 @@ contract DataStructures {
         string orderStatus;
     }
 
-
     struct ClientOrderWithOrder {
         ClientOrder clientOrder;
         Order order;
@@ -108,8 +107,7 @@ contract DataStructures {
     }
 
     // Mappings
-    mapping(address => User) public users;
-
+    mapping(address => User) internal users;
     mapping(address => DistributorDetails) public distributors;
     mapping(address => ManufacturerDetails) public manufacturers;
     mapping(address => SupplierDetails) public suppliers;
@@ -121,6 +119,24 @@ contract DataStructures {
     mapping(uint256 => ClientOrder[]) public clientOrders;
     mapping(uint256 => ClientOrder) public clientOrderById;
     mapping(uint => OrderRawMaterial) public rawMaterailOrders;
+
+    // Helper function to access rawMaterailOrders
+    // Helper function to update rawMaterailOrders (directly modifies storage)
+    function updateRawMaterialOrder(uint _orderId, OrderRawMaterial memory _order) external {
+        rawMaterailOrders[_orderId] = _order;
+    }
+
+    // Setter for orders
+    function setOrder(uint256 _orderId, Order memory _order) external {
+        orders[_orderId] = _order;
+    }
+
+    // Setter for clientOrderById
+    function setClientOrderById(uint256 _clientOrderId, ClientOrder memory _clientOrder) external {
+        clientOrderById[_clientOrderId] = _clientOrder;
+    }
+
+
 
     // State Variables
     uint256 public transactionCount;
@@ -145,134 +161,246 @@ contract DataStructures {
     uint256 constant SIX_MONTHS = 180 days;
     uint256 constant MAX_PRICE_UPDATES = 2;
 
-    // Getter for users mapping
-    function getUser(address userAddress) public view returns (User memory) {
-        return users[userAddress];
+    // Helper functions for admin
+    function setAdmin(address _adminAddress) external {
+        admin = _adminAddress;
     }
 
-    // Getter for orders mapping
-    function getOrder(uint256 orderId) public view returns (Order memory) {
-        return orders[orderId];
+    function setAdminCreated(bool _adminCreated) external {
+        adminCreated = _adminCreated;
     }
 
-    // Getter for clientOrders mapping
-    function getClientOrders(uint256 orderId) public view returns (ClientOrder[] memory) {
-        return clientOrders[orderId];
+    // Helper functions for users
+    function addUser(address _userAddress, Role _role, bool _isRegistered) external {
+        users[_userAddress] = User({
+            userAddress: _userAddress,
+            role: _role,
+            isRegistered: _isRegistered
+        });
     }
 
-    // Getter for clientOrderById mapping
-    function getClientOrderById(uint256 clientOrderId) public view returns (ClientOrder memory) {
-        return clientOrderById[clientOrderId];
+    function getUser(address _userAddress) external view returns (User memory) {
+        return users[_userAddress];
     }
 
-    // Getter for distributors mapping
-    function getDistributor(address distributorAddress) public view returns (DistributorDetails memory) {
-        return distributors[distributorAddress];
+    // Increment clientOrderCounter
+    function incrementClientOrderCounter() external {
+        clientOrderCounter++;
     }
 
-    // Getter for manufacturers mapping
-    function getManufacturer(address manufacturerAddress) public view returns (ManufacturerDetails memory) {
-        return manufacturers[manufacturerAddress];
+    // Helper functions for distributors
+    function addDistributor(address _distributorAddress, DistributorDetails memory _details) external {
+        distributors[_distributorAddress] = _details;
     }
 
-    // Getter for suppliers mapping
-    function getSupplier(address supplierAddress) public view returns (SupplierDetails memory) {
-        return suppliers[supplierAddress];
+    function getDistributor(address _distributorAddress) external view returns (DistributorDetails memory) {
+        return distributors[_distributorAddress];
     }
 
-    // Getter for materials mapping
-    function getMaterial(uint256 materialId) public view returns (RawMaterial memory) {
-        return materials[materialId];
+    function addDistributorAddress(address _distributorAddress) external {
+        distributorAddresses.push(_distributorAddress);
     }
 
-    // Getter for supplierToMaterials mapping
-    function getSupplierMaterials(address supplierAddress) public view returns (uint256[] memory) {
-        return supplierToMaterials[supplierAddress];
+    function getDistributorAddressesCount() external view returns (uint) {
+        return distributorAddresses.length;
     }
 
-    // Getter for rawMaterailOrders mapping
-    function getRawMaterialOrder(uint orderId) public view returns (OrderRawMaterial memory) {
-        return rawMaterailOrders[orderId];
+    function getDistributorAddress(uint index) external view returns (address) {
+        return distributorAddresses[index];
     }
 
-    // Getter for manufacturerOrders mapping
-    function getManufacturerOrders(address manufacturerAddress) public view returns (uint[] memory) {
-        return manufacturerOrders[manufacturerAddress];
+    // Helper functions for manufacturers
+    function addManufacturer(address _manufacturerAddress, ManufacturerDetails memory _details) external {
+        manufacturers[_manufacturerAddress] = _details;
+    }
+
+    function getManufacturer(address _manufacturerAddress) external view returns (ManufacturerDetails memory) {
+        return manufacturers[_manufacturerAddress];
+    }
+
+    function addManufacturerAddress(address _manufacturerAddress) external {
+        manufacturerAddresses.push(_manufacturerAddress);
+    }
+
+    function getManufacturerAddressesCount() external view returns (uint) {
+        return manufacturerAddresses.length;
+    }
+
+    function getManufacturerAddress(uint index) external view returns (address) {
+        return manufacturerAddresses[index];
+    }
+
+    // Helper functions for suppliers
+    function addSupplier(address _supplierAddress, SupplierDetails memory _details) external {
+        suppliers[_supplierAddress] = _details;
+    }
+
+    function getSupplier(address _supplierAddress) external view returns (SupplierDetails memory) {
+        return suppliers[_supplierAddress];
+    }
+
+    function addSupplierAddress(address _supplierAddress) external {
+        supplierAddresses.push(_supplierAddress);
+    }
+
+    function getSupplierAddressesCount() external view returns (uint) {
+        return supplierAddresses.length;
+    }
+
+    function getSupplierAddress(uint index) external view returns (address) {
+        return supplierAddresses[index];
+    }
+
+    // Helper functions for materials
+    function addMaterial(uint256 _materialId, RawMaterial memory _material) external {
+        materials[_materialId] = _material;
+    }
+
+    function getMaterial(uint256 _materialId) external view returns (RawMaterial memory) {
+        require(_materialId > 0 && _materialId <= materialIdCounter, "Invalid material ID");
+        return materials[_materialId];
+    }
+
+    // Helper functions for supplierToMaterials
+    function addSupplierMaterial(address _supplierAddress, uint256 _materialId) external {
+        supplierToMaterials[_supplierAddress].push(_materialId);
+    }
+
+    function getSupplierMaterials(address _supplierAddress) external view returns (uint256[] memory) {
+        return supplierToMaterials[_supplierAddress];
+    }
+
+    // Helper functions for manufacturerOrders
+    function addManufacturerOrder(address _manufacturerAddress, uint _orderId) external {
+        manufacturerOrders[_manufacturerAddress].push(_orderId);
+    }
+
+    function getManufacturerOrders(address _manufacturerAddress) external view returns (uint[] memory) {
+        return manufacturerOrders[_manufacturerAddress];
+    }
+
+    // Helper functions for orders
+    function addOrder(uint256 _orderId, Order memory _order) external {
+        orders[_orderId] = _order;
+    }
+    function addOrderId(uint256 _orderId) external {
+        orderIds.push(_orderId);
+    }
+
+    function getOrder(uint256 _orderId) external view returns (Order memory) {
+        return orders[_orderId];
+    }
+
+    // Helper functions for clientOrders
+    function addClientOrder(uint256 _orderId, ClientOrder memory _clientOrder) external {
+        clientOrders[_orderId].push(_clientOrder);
+    }
+
+    function getClientOrders(uint256 _orderId) external view returns (ClientOrder[] memory) {
+        return clientOrders[_orderId];
+    }
+
+    // Helper functions for clientOrderById
+    function addClientOrderById(uint256 _clientOrderId, ClientOrder memory _clientOrder) external {
+        clientOrderById[_clientOrderId] = _clientOrder;
+    }
+
+    function getClientOrderById(uint256 _clientOrderId) external view returns (ClientOrder memory) {
+        return clientOrderById[_clientOrderId];
+    }
+
+    // Helper functions for rawMaterailOrders
+    function addRawMaterialOrder(uint _orderId, OrderRawMaterial memory _order) external {
+        rawMaterailOrders[_orderId] = _order;
+    }
+
+    function getRawMaterialOrder(uint _orderId) external view returns (OrderRawMaterial memory) {
+        return rawMaterailOrders[_orderId];
     }
 
     // Getter for transactionCount
-    function getTransactionCount() public view returns (uint256) {
+    function getTransactionCount() external view returns (uint256) {
         return transactionCount;
     }
 
     // Getter for admin
-    function getAdmin() public view returns (address) {
+    function getAdmin() external view returns (address) {
         return admin;
     }
 
     // Getter for adminCreated
-    function getAdminCreated() public view returns (bool) {
+    function getAdminCreated() external view returns (bool) {
         return adminCreated;
     }
 
     // Getter for orderIds array
-    function getOrderIds() public view returns (uint256[] memory) {
+    function getOrderIds() external view returns (uint256[] memory) {
         return orderIds;
     }
 
     // Getter for distributorAddresses array
-    function getDistributorAddresses() public view returns (address[] memory) {
+    function getDistributorAddresses() external view returns (address[] memory) {
         return distributorAddresses;
     }
 
     // Getter for manufacturerAddresses array
-    function getManufacturerAddresses() public view returns (address[] memory) {
+    function getManufacturerAddresses() external view returns (address[] memory) {
         return manufacturerAddresses;
     }
 
     // Getter for supplierAddresses array
-    function getSupplierAddresses() public view returns (address[] memory) {
+    function getSupplierAddresses() external view returns (address[] memory) {
         return supplierAddresses;
     }
 
     // Getter for orderCounter
-    function getOrderCounter() public view returns (uint256) {
+    function getOrderCounter() external view returns (uint256) {
         return orderCounter;
     }
 
     // Getter for clientOrderCounter
-    function getClientOrderCounter() public view returns (uint256) {
+    function getClientOrderCounter() external view returns (uint256) {
         return clientOrderCounter;
     }
 
     // Getter for orderRawMaterialCounter
-    function getOrderRawMaterialCounter() public view returns (uint256) {
+    function getOrderRawMaterialCounter() external view returns (uint256) {
         return orderRawMaterialCounter;
     }
 
     // Getter for materialIdCounter
-    function getMaterialIdCounter() public view returns (uint256) {
+    function getMaterialIdCounter() external view returns (uint256) {
         return materialIdCounter;
     }
+    function setMaterialIdCounter(uint256 _newCounter) external {
+        materialIdCounter = _newCounter;
+    }
+
+    function setMaterial(uint256 _id, RawMaterial memory _material) external {
+        require(_id > 0 && _id <= materialIdCounter, "Invalid material ID");
+        materials[_id] = _material;
+    }
+
 
     // Getter functions for constants
-    function getHigherPrice() public pure returns (string memory) {
+    function getHigherPrice() external pure returns (string memory) {
         return HIGHER_PRICE;
     }
 
-    function getFrequentUpdates() public pure returns (string memory) {
+    function getFrequentUpdates() external pure returns (string memory) {
         return FREQUENT_UPDATES;
     }
 
-    function getSixMonths() public pure returns (uint256) {
+    function getSixMonths() external pure returns (uint256) {
         return SIX_MONTHS;
     }
 
-    function getMaxPriceUpdates() public pure returns (uint256) {
+    function getMaxPriceUpdates() external pure returns (uint256) {
         return MAX_PRICE_UPDATES;
     }
     
-    // // Events
+    
+    // Events
     event OrderCreated(uint256 indexed id, address indexed manufacturerAddress, address indexed distributorAddress, string productName);
     event ClientOrderAdded(uint256 indexed clientOrderId, uint256 indexed orderId, string clientName);
     event OrderDelivered(uint256 orderId, string clientName, uint256 timestamp);
@@ -287,6 +415,7 @@ contract DataStructures {
     event RawMaterialOrderDelivered(uint orderId);
     event PriceUpdateConfirmed(uint256 indexed materialId, bool approved);
     event SupplierFraudStatusUpdated(address indexed supplier, bool isFraud, uint256 newReliabilityRating);
+
 
     // Modifiers
     modifier onlyAdmin() {

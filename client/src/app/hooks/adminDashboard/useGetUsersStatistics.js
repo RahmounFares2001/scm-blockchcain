@@ -1,7 +1,8 @@
-"use client";
-import { useState, useEffect } from "react";
+"use client"
 import { createEthereumContract } from "@/app/utils/constants";
+import { useEffect, useState } from "react";
 
+// useGetUsersStatistics.js
 const useGetUsersStatistics = () => {
   const [supplierCount, setSupplierCount] = useState(0);
   const [manufacturerCount, setManufacturerCount] = useState(0);
@@ -19,13 +20,16 @@ const useGetUsersStatistics = () => {
       setLoading(true);
       setError(null);
 
-      const contract = await createEthereumContract();
+
+      const contract = await createEthereumContract("Dashboard");
+
       const [suppliers, manufacturers, distributors] = await contract.getUsersStatistics();
 
-      setSupplierCount(suppliers.toNumber());
-      setManufacturerCount(manufacturers.toNumber());
-      setDistributorCount(distributors.toNumber());
+      setSupplierCount(Number(suppliers));
+      setManufacturerCount(Number(manufacturers));
+      setDistributorCount(Number(distributors));
     } catch (err) {
+      console.error("Error fetching users statistics:", err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -46,4 +50,4 @@ const useGetUsersStatistics = () => {
   };
 };
 
-export default useGetUsersStatistics;
+export default useGetUsersStatistics; 

@@ -16,7 +16,7 @@ export default function useShipRawMaterial() {
       setError(null);
       setSuccess(false);
 
-      const contract = await createEthereumContract();
+      const contract = await createEthereumContract("OrderManagement");
       if (!contract) {
         throw new Error("Error connecting to the contract");
       }

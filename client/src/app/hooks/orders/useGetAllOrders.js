@@ -18,7 +18,7 @@ export default function useGetAllOrders() {
       setLoading(true);
       setError(null);
 
-      const contract = await createEthereumContract();
+      const contract = await createEthereumContract("OrderManagement");
       if (!contract) {
         setError("Error connecting to the contract");
         return;

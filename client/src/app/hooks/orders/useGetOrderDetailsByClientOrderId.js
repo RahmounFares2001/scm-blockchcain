@@ -18,7 +18,7 @@ export default function useGetOrderDetailsByClientOrderId(clientOrderId) {
       setLoading(true);
       setError(null);
 
-      const contract = await createEthereumContract();
+      const contract = await createEthereumContract("OrderManagement2");
       if (!contract) {
         setError("Error connecting to the contract");
         return;

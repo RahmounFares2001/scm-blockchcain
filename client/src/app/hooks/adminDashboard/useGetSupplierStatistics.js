@@ -19,12 +19,12 @@ const useGetSupplierStatistics = () => {
       setLoading(true);
       setError(null);
 
-      const contract = await createEthereumContract();
+      const contract = await createEthereumContract("Dashboard");
       const [fraud, reliable, underReview] = await contract.getSupplierStatistics();
 
-      setFraudCount(fraud.toNumber());
-      setReliableCount(reliable.toNumber());
-      setUnderReviewCount(underReview.toNumber());
+      setFraudCount(Number(fraud));
+      setReliableCount(Number(reliable));
+      setUnderReviewCount(Number(underReview));
     } catch (err) {
       setError(err.message);
     } finally {

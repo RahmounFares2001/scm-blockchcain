@@ -5,11 +5,10 @@ import "./DataStructures.sol";
 import "./HelperFunctions.sol";
 import "./UserManagement.sol";
 
-contract OrderManagement is DataStructures {
+contract OrderManagement {
     HelperFunctions public helperFunctions;
     UserManagement public userManagement;
     DataStructures public dataStructures;
-
 
     constructor(address _dataStructuresAddress) {
         dataStructures = DataStructures(_dataStructuresAddress);
@@ -43,18 +42,25 @@ contract OrderManagement is DataStructures {
         uint256 shouldArriveToClientAt;
     }
 
+    // Modifier to restrict access to admin
+    modifier onlyAdmin() {
+        require(dataStructures.getUser(msg.sender).role == DataStructures.Role.ADMIN, "Not authorized");
+        _;
+    }
+
+    // raw material orders
+    event RawMaterialOrderCreated(uint orderId, address manufacturer, address supplier);
+    event RawMaterialOrderShipped(uint orderId, uint256 shippedAt);
+    event RawMaterialOrderDelivered(uint orderId);
+    event OrderCreated(uint256 indexed id, address indexed manufacturerAddress, address indexed distributorAddress, string productName);
+
+
     // raw material orders
     function createOrderRawMaterial(OrderRawMaterialParams memory params) external {
-        // // Fetch supplier
-        // SupplierDetails memory supplier = userManagement.getSupplierByAddress(params.supplierAddress);
-        // require(params.supplierAddress != address(0), "Supplier does not exist");
-
-        // // Fetch manufacturer
-        // ManufacturerDetails memory manufacturer = userManagement.getManufacturerByAddress(params.manufacturerAddress);
-        // require(params.manufacturerAddress != address(0), "Manufacturer does not exist");
-
+        uint256 orderRawMaterialCounter = dataStructures.getOrderRawMaterialCounter();
         orderRawMaterialCounter++;
-        rawMaterailOrders[orderRawMaterialCounter] = OrderRawMaterial({
+
+        dataStructures.addRawMaterialOrder(orderRawMaterialCounter, DataStructures.OrderRawMaterial({
             id: orderRawMaterialCounter,
             supplierAddress: params.supplierAddress,
             manufacturerAddress: params.manufacturerAddress,
@@ -67,40 +73,56 @@ contract OrderManagement is DataStructures {
             shouldArriveAt: params.shouldArriveAt,
             arrivedAt: 0,
             status: "Pending"
-        });
-        manufacturerOrders[params.manufacturerAddress].push(orderRawMaterialCounter);
+        }));
+
+        dataStructures.addManufacturerOrder(params.manufacturerAddress, orderRawMaterialCounter);
         emit RawMaterialOrderCreated(orderRawMaterialCounter, params.manufacturerAddress, params.supplierAddress);
     }
 
     function shipRawMaterial(uint orderId) external {
-        require(keccak256(bytes(rawMaterailOrders[orderId].status)) == keccak256(bytes("Pending")), "Already shipped");
-        rawMaterailOrders[orderId].status = "Shipped";
-        rawMaterailOrders[orderId].shippedAt = block.timestamp;
+        // Read the order from storage
+        DataStructures.OrderRawMaterial memory order = dataStructures.getRawMaterialOrder(orderId);
+
+        // Ensure the order is in the "Pending" state
+        require(keccak256(bytes(order.status)) == keccak256(bytes("Pending")), "Already shipped");
+
+        // Update the order status and shipment timestamp
+        order.status = "Shipped";
+        order.shippedAt = block.timestamp;
+
+        // Save the updated order back to storage
+        dataStructures.updateRawMaterialOrder(orderId, order);
+
+        // Emit the event
         emit RawMaterialOrderShipped(orderId, block.timestamp);
     }
 
     function confirmRawMaterialReception(uint orderId) external {
-        require(keccak256(bytes(rawMaterailOrders[orderId].status)) == keccak256(bytes("Shipped")), "Not yet shipped");
-        require(keccak256(bytes(rawMaterailOrders[orderId].status)) != keccak256(bytes("Delivered")), "Already delivered");
-        rawMaterailOrders[orderId].status = "Delivered";
-        rawMaterailOrders[orderId].quantityreceived = rawMaterailOrders[orderId].quantityOrdered;
-        rawMaterailOrders[orderId].arrivedAt = block.timestamp;
+        // Read the order from storage
+        DataStructures.OrderRawMaterial memory order = dataStructures.getRawMaterialOrder(orderId);
+
+        // Ensure the order is in the "Shipped" state and not already delivered
+        require(keccak256(bytes(order.status)) == keccak256(bytes("Shipped")), "Not yet shipped");
+        require(keccak256(bytes(order.status)) != keccak256(bytes("Delivered")), "Already delivered");
+
+        // Update the order status, received quantity, and arrival timestamp
+        order.status = "Delivered";
+        order.quantityreceived = order.quantityOrdered;
+        order.arrivedAt = block.timestamp;
+
+        // Save the updated order back to storage
+        dataStructures.updateRawMaterialOrder(orderId, order);
+
+        // Emit the event
         emit RawMaterialOrderDelivered(orderId);
     }
 
     // product orders
     function createOrder(OrderParams memory params) external onlyAdmin {
-        // // Fetch manufacturer
-        // ManufacturerDetails memory manufacturer = userManagement.getManufacturerByAddress(params.manufacturerAddress);
-        // require(params.manufacturerAddress != address(0), "Manufacturer does not exist");
-
-        // // Fetch distributor
-        // DistributorDetails memory distributor = userManagement.getDistributorByAddress(params.distributorAddress);
-        // require(params.distributorAddress != address(0), "Distributor does not exist");
-
+        uint256 orderCounter = dataStructures.getOrderCounter();
         orderCounter++;
 
-        orders[orderCounter] = Order({
+        dataStructures.addOrder(orderCounter, DataStructures.Order({
             id: orderCounter,
             manufacturerAddress: params.manufacturerAddress,
             isProduced: false,
@@ -114,45 +136,47 @@ contract OrderManagement is DataStructures {
             productQuantity: params.productQuantity,
             productHash: 0,
             orderStatus: "Pending Production"
-        });
+        }));
 
-        orderIds.push(orderCounter);
+        dataStructures.addOrderId(orderCounter);
         emit OrderCreated(orderCounter, params.manufacturerAddress, params.distributorAddress, params.productName);
     }
 
-    function getAllOrders() external view returns (Order[] memory) {
-        Order[] memory allOrders = new Order[](orderCounter);
-        
-        for(uint256 i = 0; i < orderCounter; i++) {
-            allOrders[i] = orders[i + 1]; // IDs start with 1
+    function getAllOrders() external view returns (DataStructures.Order[] memory) {
+        uint256 orderCounter = dataStructures.getOrderCounter();
+        DataStructures.Order[] memory allOrders = new DataStructures.Order[](orderCounter);
+
+        for (uint256 i = 0; i < orderCounter; i++) {
+            allOrders[i] = dataStructures.getOrder(i + 1); // IDs start with 1
         }
-        
+
         return allOrders;
     }
 
-    function getOrderByOrderId(uint256 _orderId) public view returns (Order memory) {
-        require(_orderId > 0 && _orderId <= orderCounter, "Invalid Order ID");
-        return orders[_orderId];
+    function getOrderByOrderId(uint256 _orderId) public view returns (DataStructures.Order memory) {
+        require(_orderId > 0 && _orderId <= dataStructures.getOrderCounter(), "Invalid Order ID");
+        return dataStructures.getOrder(_orderId);
     }
 
-    function getOrderByManufacturerAddress(address _manufacturerAddress) external view returns (Order[] memory) {
+    function getOrderByManufacturerAddress(address _manufacturerAddress) external view returns (DataStructures.Order[] memory) {
+        uint256 orderCounter = dataStructures.getOrderCounter();
         uint256 count = 0;
-        
+
         // Count number of orders
-        for(uint256 i = 0; i < orderCounter; i++) {
-            if(orders[i + 1].manufacturerAddress == _manufacturerAddress) {
+        for (uint256 i = 0; i < orderCounter; i++) {
+            if (dataStructures.getOrder(i + 1).manufacturerAddress == _manufacturerAddress) {
                 count++;
             }
         }
 
         // Result table
-        Order[] memory _orders = new Order[](count);
+        DataStructures.Order[] memory _orders = new DataStructures.Order[](count);
         uint256 index = 0;
-        
-        for(uint256 i = 0; i < orderCounter; i++) {
+
+        for (uint256 i = 0; i < orderCounter; i++) {
             uint256 orderId = i + 1;
-            if(orders[orderId].manufacturerAddress == _manufacturerAddress) {
-                _orders[index] = orders[orderId];
+            if (dataStructures.getOrder(orderId).manufacturerAddress == _manufacturerAddress) {
+                _orders[index] = dataStructures.getOrder(orderId);
                 index++;
             }
         }
@@ -160,5 +184,14 @@ contract OrderManagement is DataStructures {
         return _orders;
     }
 
+    function getAllMaterialsOrders() public view returns (DataStructures.OrderRawMaterial[] memory) {
+        uint256 orderRawMaterialCounter = dataStructures.getOrderRawMaterialCounter();
+        DataStructures.OrderRawMaterial[] memory orders = new DataStructures.OrderRawMaterial[](orderRawMaterialCounter);
 
+        for (uint256 i = 1; i <= orderRawMaterialCounter; i++) {
+            orders[i - 1] = dataStructures.getRawMaterialOrder(i);
+        }
+
+        return orders;
+    }
 }

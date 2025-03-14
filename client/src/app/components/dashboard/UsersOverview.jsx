@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 
 // Icons
@@ -8,6 +9,7 @@ import { FaRegUser } from "react-icons/fa";
 import useGetUsersStatistics from "@/app/hooks/adminDashboard/useGetUsersStatistics";
 
 
+
 export default function UsersOverview() {
   const {
     supplierCount,
@@ -15,6 +17,7 @@ export default function UsersOverview() {
     distributorCount,
     loading,
     error,
+    fetchUsersStatistics
   } = useGetUsersStatistics();
 
   if (loading) return <p>Loading users...</p>;

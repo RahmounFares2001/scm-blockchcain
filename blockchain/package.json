@@ -16,5 +16,9 @@
     "ethers": "^5.7.2",
     "hardhat": "^2.22.18"
   },
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "fs": "^0.0.1-security",
+    "path": "^0.12.7"
+  }
 }

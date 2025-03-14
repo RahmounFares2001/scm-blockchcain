@@ -1,6 +1,6 @@
 "use client";
-
 import { useState, useEffect } from "react";
+
 import { createEthereumContract } from "@/app/utils/constants";
 
 export default function useGetAllSuppliers() {
@@ -18,7 +18,7 @@ export default function useGetAllSuppliers() {
       setLoading(true);
       setError(null);
 
-      const contract = await createEthereumContract();
+      const contract = await createEthereumContract("UserManagement");
       if (!contract) {
         setError("Error connecting to the contract");
         return;

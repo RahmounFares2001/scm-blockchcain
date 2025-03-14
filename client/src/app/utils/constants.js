@@ -1,45 +1,3 @@
-// import { ethers } from "ethers";
-// import abi from "./Transactions.json" 
-
-
-// export const adminAddress = '0x8dE0DDA75de90ae6125d78D17a9E20e3590a7b74';
-
-// export const contractAddress = "0xA38c91e1559c8Ee4B602123658A49e4BeD822a08";
-
-// export const contractABI = abi.abi;
-
-
-
-
-// // create eth contract
-// export const createEthereumContract = async () => {
-//     try {
-//         if (!window.ethereum) throw new Error("Please install MetaMask!");
-
-//         // Request account access
-//         const accounts = await window.ethereum.request({ 
-//             method: 'eth_requestAccounts' 
-//         });
-        
-//         // Get provider and signer
-//         const provider = new ethers.BrowserProvider(window.ethereum);
-//         const signer = await provider.getSigner(accounts[0]);
-        
-//         // Create contract instance with signer
-//         const contract = new ethers.Contract(
-//             contractAddress,
-//             contractABI,
-//             signer
-//         );
-
-//         console.log("Contract connection established with account:", accounts[0]);
-//         return contract;
-//     } catch (error) {
-//         console.error("Error in createEthereumContract:", error);
-//         throw error;
-//     }
-// };
-
 
 import { ethers } from "ethers";
 import UserManagementABI from "./UserManagement.json";
@@ -53,23 +11,23 @@ import DataStructuresABI from "./DataStructures.json";
 export const adminAddress = '0x8dE0DDA75de90ae6125d78D17a9E20e3590a7b74';
 
 export const contractAddresses = {
-    UserManagement: "0xE309Cb15103819f39Dd111E6557682171095dC68", 
-    SupplierManagement: "0xdd7328A55C4e3B204e03C973286Fa63B1D90AA7c",
-    SupplierManagement2: "0x03a44AA42df8786536dc77496DE1A580c55173F4",
-    OrderManagement: "0xD2f73c59B59a24463C63dC185F68F39b0d3Dd56D", 
-    OrderManagement2: "0x6F6b80845738F695819433D2F1e1c374951E7705", 
-    Dashboard: "0x4723c1310376B6872357a423741adbbB76796665", 
-    DataStructures: "0xCD60DC794C8fB234F79A13A3a8089A8D6326400d", 
+  "UserManagement": "0xaaC1a2c2ab720464Ec37Fd37140db443079eF05D",
+  "SupplierManagement": "0x9a9b497bD5aB214c9d15b6324e1dD52cCD733Ec1",
+  "SupplierManagement2": "0x7446e283Be96e30Abb39Cb6148a4f5185d9421F6",
+  "OrderManagement": "0xbD3B58C5512DA8a5F18D97f4Ab4d1D42db14fE8e",
+  "OrderManagement2": "0xaaBf1355adeA3EDec2Dea16244A6A92BF2c36819",
+  "Dashboard": "0x34F73Be06de0f5E30A251586790b47564CcE05a6",
+  "DataStructures": "0x229c9796D28DAce8378Dc63529cE832Dde2C3051"
 };
 
 export const contractABIs = {
-    UserManagement: UserManagementABI.abi,
-    SupplierManagement: SupplierManagementABI.abi,
-    SupplierManagement2: SupplierManagement2ABI.abi,
-    OrderManagement: OrderManagementABI.abi,
-    OrderManagement: OrderManagement2ABI.abi,
-    Dashboard: DashboardABI.abi,
-    DataStructures: DataStructuresABI.abi,
+  UserManagement: UserManagementABI.abi,
+  SupplierManagement: SupplierManagementABI.abi,
+  SupplierManagement2: SupplierManagement2ABI.abi,
+  OrderManagement: OrderManagementABI.abi,
+  OrderManagement2: OrderManagement2ABI.abi,
+  Dashboard: DashboardABI.abi,
+  DataStructures: DataStructuresABI.abi,
 };
 
 // Create Ethereum contract instance
@@ -83,7 +41,6 @@ export const createEthereumContract = async (contractName) => {
 
         const provider = new ethers.BrowserProvider(window.ethereum);
         const signer = await provider.getSigner(accounts[0]);
-
         const contract = new ethers.Contract(
             contractAddresses[contractName],
             contractABIs[contractName],

@@ -19,7 +19,7 @@ export default function useAddClientOrder() {
       setError(null);
       setSuccess(false);
 
-      const contract = await createEthereumContract();
+      const contract = await createEthereumContract("OrderManagement2");
       if (!contract) {
         setError("Error connecting to the contract");
         return;

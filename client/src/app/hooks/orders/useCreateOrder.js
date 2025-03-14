@@ -24,7 +24,7 @@ export default function useCreateOrder() {
       setError(null);
       setTransactionHash(null);
 
-      const contract = await createEthereumContract();
+      const contract = await createEthereumContract("OrderManagement");
       if (!contract) {
         setError("Error connecting to the contract");
         return;

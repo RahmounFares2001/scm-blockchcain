@@ -13,43 +13,44 @@ import useUpdateSupplier from "@/app/hooks/suppliers/useUpdateSupplier";
 export default function UpdateSupplierForm({ data: clickedData }) {
   const dispatch = useDispatch();
   const { updateSupplier, loading, error, success } = useUpdateSupplier();
-
+  console.log(clickedData)
   // Validation schema
   const validationSchema = Yup.object().shape({
-    supplierAddress: Yup.string()
-      .required("Supplier Address is required")
-      .matches(/^0x[a-fA-F0-9]{40}$/, "Invalid Ethereum address"),
-    name: Yup.string().required("Name is required"),
+    name: Yup.string(),
     reliabilityRating: Yup.number()
-      .required("Reliability Rating is required")
       .min(1, "Minimum rating is 1")
       .max(5, "Maximum rating is 5"),
-    isFraud: Yup.string().required("Status is required"),
-    place: Yup.string().required("Place is required"),
+    isFraud: Yup.string(),
+    place: Yup.string(),
     emailAddress: Yup.string()
       .email("Invalid email")
-      .required("Email is required"),
   });
 
   // Formik 
   const formik = useFormik({
     initialValues: {
-      supplierAddress: clickedData?.supplierAddress || "",
-      name: clickedData?.name || "",
-      reliabilityRating: clickedData?.reliabilityRating || 1,
-      isFraud: clickedData?.isFraud || "Reliable",
-      place: clickedData?.place || "",
-      emailAddress: clickedData?.emailAddress || "",
+      supplierAddress: clickedData?.supplier.address || "",
+      name: clickedData?.supplier.name || "",
+      reliabilityRating: clickedData?.supplier.reliabilityRating || 1,
+      isFraud: clickedData?.supplier.fraudStatus || "Reliable",
+      place: clickedData?.supplier.place || "",
+      emailAddress: clickedData?.supplier.email || "",
     },
     validationSchema,
     onSubmit: async (values, { resetForm }) => {
+      const name = values.name? values.name: clickedData.supplier.name;
+      const reliabilityRating =  values.reliabilityRating? values.reliabilityRating : clickedData.supplier.reliabilityRating;
+      const isFraud = values.isFraud? values.isFraud: clickedData.supplier.fraudStatus;
+      const place = values.place? values.place: clickedData.supplier.place;
+      const emailAddress = values.emailAddress? values.emailAddress :clickedData.supplier.email;
+      console.log(name, reliabilityRating, isFraud, place, emailAddress)
       const success = await updateSupplier(
-        values.supplierAddress,
-        values.name,
-        values.reliabilityRating,
-        values.isFraud,
-        values.place,
-        values.emailAddress
+        clickedData?.supplier.address,
+        name,
+        reliabilityRating,
+        isFraud,
+        place,
+        emailAddress
       );
 
       if (success) {

@@ -17,7 +17,7 @@ const useGetAllDistributors = () => {
       setLoading(true);
       setError(null);
 
-      const contract = await createEthereumContract(); 
+      const contract = await createEthereumContract("UserManagement"); 
       const data = await contract.getAllDistributors();
 
       const formattedDistributors = data[0].map((_, index) => ({

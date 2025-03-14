@@ -22,7 +22,7 @@ const useGetOrdersStatistics = () => {
       setLoading(true);
       setError(null);
 
-      const contract = await createEthereumContract();
+      const contract = await createEthereumContract("Dashboard");
       const [
         pendingProduction,
         manufactured,
@@ -32,12 +32,12 @@ const useGetOrdersStatistics = () => {
         deliveredToClient,
       ] = await contract.getOrdersStatistics();
 
-      setPendingProductionCount(pendingProduction.toNumber());
-      setManufacturedCount(manufactured.toNumber());
-      setShippedToDistributorCount(shippedToDistributor.toNumber());
-      setArrivedToDistributorCount(arrivedToDistributor.toNumber());
-      setShippedToClientCount(shippedToClient.toNumber());
-      setDeliveredToClientCount(deliveredToClient.toNumber());
+      setPendingProductionCount(Number(pendingProduction));
+      setManufacturedCount(Number(manufactured));
+      setShippedToDistributorCount(Number(shippedToDistributor));
+      setArrivedToDistributorCount(Number(arrivedToDistributor));
+      setShippedToClientCount(Number(shippedToClient));
+      setDeliveredToClientCount(Number(deliveredToClient));
     } catch (err) {
       setError(err.message);
     } finally {

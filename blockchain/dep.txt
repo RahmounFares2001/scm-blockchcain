@@ -1,0 +1,84 @@
+// const hre = require("hardhat");
+
+// const main = async () => {
+//   const adminAddress = '0x8dE0DDA75de90ae6125d78D17a9E20e3590a7b74'; 
+
+//   // Deploy DataStructures
+//   const DataStructuresFactory = await hre.ethers.getContractFactory("DataStructures");
+//   const dataStructuresContract = await DataStructuresFactory.deploy({ gasLimit: 5000000 });
+//   await dataStructuresContract.deployed();
+//   console.log("DataStructures address: ", dataStructuresContract.address);
+
+//   // Deploy HelperFunctions
+//   const HelperFunctionsFactory = await hre.ethers.getContractFactory("HelperFunctions");
+//   const helperFunctionsContract = await HelperFunctionsFactory.deploy({ gasLimit: 5000000 }); // No arguments
+//   await helperFunctionsContract.deployed();
+//   console.log("HelperFunctions address: ", helperFunctionsContract.address);
+
+//   // Deploy UserManagement 
+//   const UserManagementFactory = await hre.ethers.getContractFactory("UserManagement");
+//   const userManagementContract = await UserManagementFactory.deploy(
+//     adminAddress,
+//     dataStructuresContract.address,
+//     { gasLimit: 5000000 }
+//   );
+//   await userManagementContract.deployed();
+//   console.log("UserManagement address: ", userManagementContract.address);
+
+//   // Deploy SupplierManagement
+//   const SupplierManagementFactory = await hre.ethers.getContractFactory("SupplierManagement");
+//   const supplierManagementContract = await SupplierManagementFactory.deploy(
+//     dataStructuresContract.address,
+//     { gasLimit: 5000000 }
+//   );
+//   await supplierManagementContract.deployed();
+//   console.log("SupplierManagement address: ", supplierManagementContract.address);
+
+//   // Deploy SupplierManagement2
+//   const SupplierManagement2Factory = await hre.ethers.getContractFactory("SupplierManagement2");
+//   const supplierManagement2Contract = await SupplierManagement2Factory.deploy(
+//     dataStructuresContract.address,
+//     { gasLimit: 5000000 }
+//   );
+//   await supplierManagement2Contract.deployed();
+//   console.log("SupplierManagement2 address: ", supplierManagement2Contract.address);
+
+//   // Deploy OrderManagement
+//   const OrderManagementFactory = await hre.ethers.getContractFactory("OrderManagement");
+//   const orderManagementContract = await OrderManagementFactory.deploy(
+//     dataStructuresContract.address,
+//     { gasLimit: 5000000 }
+//   );
+//   await orderManagementContract.deployed();
+//   console.log("OrderManagement address: ", orderManagementContract.address);
+
+//   // Deploy OrderManagement2
+//   const OrderManagement2Factory = await hre.ethers.getContractFactory("OrderManagement2");
+//   const orderManagement2Contract = await OrderManagement2Factory.deploy(
+//     dataStructuresContract.address,
+//     { gasLimit: 5000000 }
+//   );
+//   await orderManagement2Contract.deployed();
+//   console.log("OrderManagement2 address: ", orderManagement2Contract.address);
+
+//   // Deploy Dashboard
+//   const DashboardFactory = await hre.ethers.getContractFactory("Dashboard");
+//   const dashboardContract = await DashboardFactory.deploy(
+//     dataStructuresContract.address,
+//     { gasLimit: 5000000 }
+//   );
+//   await dashboardContract.deployed();
+//   console.log("Dashboard address: ", dashboardContract.address);
+// };
+
+// const runMain = async () => {
+//   try {
+//     await main();
+//     process.exit(0);
+//   } catch (error) {
+//     console.error(error);
+//     process.exit(1);
+//   }
+// };
+
+// runMain();

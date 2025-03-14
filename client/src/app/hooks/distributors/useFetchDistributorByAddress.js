@@ -18,7 +18,7 @@ export default function useFetchDistributorByAddress() {
       setLoading(true);
       setError(null);
 
-      const contract = await createEthereumContract();
+      const contract = await createEthereumContract("UserManagement");
       if (!contract) {
         setError("Error connecting to the contract");
         return;

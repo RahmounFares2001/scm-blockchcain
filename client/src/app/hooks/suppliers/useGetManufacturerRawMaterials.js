@@ -16,7 +16,7 @@ export default function useGetManufacturerRawMaterials() {
       setError(null);
       setRawMaterials([]);
 
-      const contract = await createEthereumContract();
+      const contract = await createEthereumContract("SupplierManagement2");
       if (!contract) {
         throw new Error("Error connecting to the contract");
       }

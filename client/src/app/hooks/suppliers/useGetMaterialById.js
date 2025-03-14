@@ -21,7 +21,7 @@ export default function useGetMaterialById(materialId) {
         setLoading(true);
         setError(null);
 
-        const contract = await createEthereumContract();
+        const contract = await createEthereumContract("SupplierManagement2");
         if (!contract) {
           setError("Error connecting to the contract");
           return;
