@@ -1,7 +1,7 @@
 import React from 'react'
 
 // components
-import AddDistributorForm from '@/app/components/distributors/AddDistributorForm'
+import AddDistributorForm from '@/app/components/adminDashboard/distributors/AddDistributorForm'
 
 // icons
 import { IoIosArrowRoundForward } from 'react-icons/io'

@@ -1,5 +1,5 @@
 "use client";
-import AddManufacturerForm from '@/app/components/Manufactories/AddManufacturerForm';
+import AddManufacturerForm from '@/app/components/adminDashboard/Manufactories/AddManufacturerForm';
 import React from 'react'
 
 // icons

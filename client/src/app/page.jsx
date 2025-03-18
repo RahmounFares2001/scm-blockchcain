@@ -1,11 +1,11 @@
 "use client";
 
 
-import Hero from "./components/home/Hero";
-import HomeHeader from "./components/home/HomeHeader";
-import Features from "./components/home/Features";
-import Contact from "./components/home/Contact";
-import HomeFooter from "./components/home/HomeFooter";
+import Hero from "./components/adminDashboard/home/Hero";
+import HomeHeader from "./components/adminDashboard/home/HomeHeader";
+import Features from "./components/adminDashboard/home/Features";
+import Contact from "./components/adminDashboard/home/Contact";
+import HomeFooter from "./components/adminDashboard/home/HomeFooter";
 import { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import { JsonRpcProvider } from 'ethers';

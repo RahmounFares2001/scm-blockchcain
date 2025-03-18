@@ -13,7 +13,7 @@ import { IoLogOutOutline } from "react-icons/io5";
 
 // redux
 import { useDispatch, useSelector } from 'react-redux';
-  import { setUi } from '../../globalRedux/features/ui/uiSlice';
+  import { setUi } from '../../../globalRedux/features/ui/uiSlice';
 
 export default function TopBar() {
   const dispatch = useDispatch();

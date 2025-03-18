@@ -1,10 +1,10 @@
 import React from 'react'
 
 // components
-import UsersOverview from '../components/dashboard/UsersOverview'
-import SuppliersOverview from '../components/dashboard/SuppliersOverview'
-import OrederOverview from '../components/dashboard/OrdersOverview'
-import MaterialOrederOverview from '../components/dashboard/MaterialOrderOverview'
+import UsersOverview from '../components/adminDashboard/dashboard/UsersOverview'
+import SuppliersOverview from '../components/adminDashboard/dashboard/SuppliersOverview'
+import OrederOverview from '../components/adminDashboard/dashboard/OrdersOverview'
+import MaterialOrederOverview from '../components/adminDashboard/dashboard/MaterialOrderOverview'
 
 export default function page() {
   return (

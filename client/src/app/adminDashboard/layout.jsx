@@ -3,14 +3,14 @@
 import React from 'react'
 
 // components
-import SideBar from '../components/layouts/SideBar'
-import TopBar from '../components/layouts/TopBar'
+import SideBar from '../components/adminDashboard/layouts/SideBar'
+import TopBar from '../components/adminDashboard/layouts/TopBar'
 
 // redux
 import { useDispatch, useSelector } from 'react-redux';
-import HoveredSideBar from '../components/layouts/HoveredSideBar';
+import HoveredSideBar from '../components/adminDashboard/layouts/HoveredSideBar';
 import { setUi } from '../globalRedux/features/ui/uiSlice';
-import AddSupplierForm from '../components/suppliers/AddSupplierForm';
+import AddSupplierForm from '../components/adminDashboard/suppliers/AddSupplierForm';
 
 export default function layout({children}) {
   const dispatch = useDispatch();

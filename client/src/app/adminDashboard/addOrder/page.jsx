@@ -1,5 +1,5 @@
 "use client";
-import CreateOrderForm from '@/app/components/productOrders/AddOrderForm';
+import CreateOrderForm from '@/app/components/adminDashboard/productOrders/AddOrderForm';
 import React from 'react'
 
 // icons

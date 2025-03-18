@@ -4,7 +4,7 @@
 import React from 'react'
 
 // componenets
-import SearchBar from '@/app/components/layouts/SearchBar';
+import SearchBar from '@/app/components/adminDashboard/layouts/SearchBar';
 import { setUi } from '@/app/globalRedux/features/ui/uiSlice';
 
 // table
@@ -16,7 +16,7 @@ import { IoIosArrowRoundForward } from "react-icons/io";
 // redux
 import { useDispatch } from 'react-redux';
 import Link from 'next/link';
-import { RawMaterialsTable } from '@/app/components/suppliers/RawMaterialsTable';
+import { RawMaterialsTable } from '@/app/components/adminDashboard/suppliers/RawMaterialsTable';
 
 
 export default function page() {

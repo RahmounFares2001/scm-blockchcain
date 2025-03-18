@@ -1,5 +1,5 @@
 "use client";
-import AddSupplierForm from '@/app/components/suppliers/AddSupplierForm';
+import AddSupplierForm from '@/app/components/adminDashboard/suppliers/AddSupplierForm';
 import React from 'react'
 
 // icons

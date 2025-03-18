@@ -4,8 +4,8 @@
 import React from 'react'
 
 // componenets
-import SearchBar from '@/app/components/layouts/SearchBar';
-import { DistributorsTable } from '@/app/components/distributors/DistributorsTable';
+import SearchBar from '@/app/components/adminDashboard/layouts/SearchBar';
+import { DistributorsTable } from '@/app/components/adminDashboard/distributors/DistributorsTable';
 
 // icons
 import { IoIosArrowRoundForward } from "react-icons/io";

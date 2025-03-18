@@ -4,12 +4,12 @@
 import React from 'react'
 
 // componenets
-import SearchBar from '@/app/components/layouts/SearchBar';
-import AddSupplierForm from '@/app/components/suppliers/AddSupplierForm';
+import SearchBar from '@/app/components/adminDashboard/layouts/SearchBar';
+import AddSupplierForm from '@/app/components/adminDashboard/suppliers/AddSupplierForm';
 import { setUi } from '@/app/globalRedux/features/ui/uiSlice';
 
 // table
-import { SuppliersTable } from '@/app/components/suppliers/SuppliersTable';
+import { SuppliersTable } from '@/app/components/adminDashboard/suppliers/SuppliersTable';
 
 
 // icons
