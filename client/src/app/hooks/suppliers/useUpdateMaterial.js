@@ -8,11 +8,11 @@ export default function useUpdateMaterial() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
 
-  const updateMaterial = async (_id, _name, _description, _price, _quantityAvailable, updatePriceRaison) => {
+  const updateMaterial = async ({ id, name, price, quantityAvailable, updatePriceRaison, shouldUpdate }) => {
     try {
       if (!window.ethereum) {
         alert("Please install MetaMask!");
-        return;
+        return false;
       }
 
       setLoading(true);
@@ -20,20 +20,39 @@ export default function useUpdateMaterial() {
       setSuccess(false);
 
       const contract = await createEthereumContract("SupplierManagement2");
+
       if (!contract) {
         setError("Error connecting to the contract");
-        return;
+        return false;
       }
 
-      const tx = await contract.updateMaterial(_id, _name, _description, _price, _quantityAvailable, updatePriceRaison);
+      let tx;
+
+      console.log("id", id);
+      console.log("name", name);
+      console.log("updatePriceRaison", updatePriceRaison);
+      console.log("price", price);
+      console.log("quantityAvailable", quantityAvailable);
+      console.log("shouldUpdate", shouldUpdate);
+
+
+      if (shouldUpdate == "price") {
+          tx = await contract.updateMaterialPrice(id, name, price, updatePriceRaison);
+      } else if (shouldUpdate == "quantityAvailable") {
+        tx = await contract.updateMaterialQuantity(id, quantityAvailable);  
+      }
+
+      // tx = await contract.updateMaterialQuantity(id, quantityAvailable);
+      
       await tx.wait();
 
       setSuccess(true);
       alert("Material updated successfully!");
-    } catch (err) {
-      console.error("Error updating material:", err);
-      setError("Failed to update material.");
-      alert("Error: Failed to update material.");
+      return true;
+    } catch (txError) {
+      console.error("Transaction error:", txError);
+      setError("Transaction failed: " + (txError.message || "Unknown error"));
+      return false;
     } finally {
       setLoading(false);
     }

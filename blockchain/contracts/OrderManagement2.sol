@@ -92,7 +92,7 @@ contract OrderManagement2 {
         order.shippedToDistributorAt = block.timestamp;
 
         // Generate product hash
-        order.productHash = helperFunctions.createProductHash(
+        order.productHash = createProductHash(
             order.productQuantity,
             order.producedAt,
             order.shippedToDistributorAt
@@ -267,5 +267,9 @@ contract OrderManagement2 {
         }
 
         return distributorClientOrders;
+    }
+    // create hash from order details
+    function createProductHash(uint256 quantity, uint256 producedAt, uint256 shippedAt) internal pure returns (uint256) {
+        return uint256(keccak256(abi.encodePacked(quantity, producedAt, shippedAt)));
     }
 }

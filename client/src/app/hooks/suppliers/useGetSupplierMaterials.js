@@ -28,13 +28,20 @@ export default function useGetSupplierMaterials() {
 
       const formattedMaterials = data.map((material) => ({
         id: material.id.toString(),
+        supplierAddress: material.supplierAddress,
         name: material.name,
         description: material.description,
         price: material.price.toString(),
         quantityAvailable: material.quantityAvailable.toString(),
+        reviewPriceUpdate: material.reviewPriceUpdate.toString(),
         isAvailable: material.isAvailable,
         timestamp: material.timestamp.toString(),
-        supplierAddress: material.supplierAddress,
+        updatePriceRaison: material.updatePriceRaison,
+        priceUpdateTimestamps: material.priceUpdateTimestamps.map((timestamp) =>
+          timestamp.toString()
+        ),
+        reviewReason: material.reviewReason,
+        isDeleted: material.isDeleted,
       }));
 
       setMaterials(formattedMaterials);

@@ -136,6 +136,11 @@ contract DataStructures {
         clientOrderById[_clientOrderId] = _clientOrder;
     }
 
+    // update PriceUpdateTimestamp for each price modification
+    function addPriceUpdateTimestamp(uint256 id, uint256 updateTimestamp) external {
+        materials[id].priceUpdateTimestamps.push(updateTimestamp);
+    }
+
 
 
     // State Variables
@@ -257,7 +262,6 @@ contract DataStructures {
     }
 
     function getMaterial(uint256 _materialId) external view returns (RawMaterial memory) {
-        require(_materialId > 0 && _materialId <= materialIdCounter, "Invalid material ID");
         return materials[_materialId];
     }
 
@@ -377,10 +381,8 @@ contract DataStructures {
     }
 
     function setMaterial(uint256 _id, RawMaterial memory _material) external {
-        require(_id > 0 && _id <= materialIdCounter, "Invalid material ID");
         materials[_id] = _material;
     }
-
 
     // Getter functions for constants
     function getHigherPrice() external pure returns (string memory) {

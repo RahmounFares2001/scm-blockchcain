@@ -84,7 +84,7 @@ contract SupplierManagement {
             }
 
             // Add the new violation to the end of the array
-            string memory violation = string(abi.encodePacked("Supplier delayed by ", helperFunctions.toString(daysDelayed), " days."));
+            string memory violation = string(abi.encodePacked("Supplier delayed by ", toString(daysDelayed), " days."));
             newViolations[newViolations.length - 1] = violation;
 
             // Update the supplier's violations in storage
@@ -123,7 +123,7 @@ contract SupplierManagement {
 
             // Add the new violation to the end of the array
             uint256 differenceQuantity = order.quantityOrdered - order.quantityreceived;
-            string memory violation = string(abi.encodePacked("Delivered quantity differs by  ", helperFunctions.toString(differenceQuantity), " units from the ordered quantity."));
+            string memory violation = string(abi.encodePacked("Delivered quantity differs by  ", toString(differenceQuantity), " units from the ordered quantity."));
             newViolations[newViolations.length - 1] = violation;
 
             // Update the supplier's violations in storage
@@ -230,5 +230,27 @@ contract SupplierManagement {
         emit MaterialAdded(newMaterialId, msg.sender);
 
         return newMaterialId;
+    }
+    // Helper function to convert uint to string
+    function toString(uint256 value) internal pure returns (string memory) {
+        if (value == 0) {
+            return "0";
+        }
+        
+        uint256 temp = value;
+        uint256 digits;
+        while (temp != 0) {
+            digits++;
+            temp /= 10;
+        }
+        
+        bytes memory buffer = new bytes(digits);
+        while (value != 0) {
+            digits--;
+            buffer[digits] = bytes1(uint8(48 + uint256(value % 10)));
+            value /= 10;
+        }
+        
+        return string(buffer);
     }
 }

@@ -31,60 +31,55 @@ contract SupplierManagement2 {
     event MaterialUpdated(uint256 indexed id);
 
 
-    struct UpdateMaterialParams {
-        uint256 id;
-        string name;
-        string description;
-        uint256 price;
-        uint256 quantityAvailable;
-        string updatePriceRaison;
-    }
+    function updateMaterialPrice(
+        uint256 id,
+        string memory name,
+        uint256 price,
+        string memory updatePriceRaison
+    ) public onlySupplier {
+        DataStructures.RawMaterial memory material = dataStructures.getMaterial(id);
 
-    function updateMaterial(UpdateMaterialParams memory params) public onlySupplier {
-        require(params.id > 0 && params.id <= dataStructures.getMaterialIdCounter(), "Invalid material ID");
-        require(helperFunctions.isMaterialOwner(params.id), "Not the material owner");
-        require(bytes(params.name).length > 0, "Name cannot be empty");
-        require(bytes(params.description).length > 0, "Description cannot be empty");
-        require(params.price > 0, "Price must be greater than 0");
-        require(params.quantityAvailable > 0, "Quantity must be greater than 0");
+        if (price != material.price) {
+            uint256 updateTimestamp = block.timestamp;
+            dataStructures.addPriceUpdateTimestamp(id, updateTimestamp);
 
-        // Fetch the material using the getter function
-        DataStructures.RawMaterial memory material = dataStructures.getMaterial(params.id);
+            // Update the material fields
+            material.updatePriceRaison = updatePriceRaison;
 
-        // Update the material fields
-        material.name = params.name;
-        material.description = params.description;
-        material.price = params.price;
-        material.quantityAvailable = params.quantityAvailable;
-        material.timestamp = block.timestamp;
-
-        // Handle price updates
-        if (params.price != material.price) {
-            material.updatePriceRaison = params.updatePriceRaison;
-
-            if (helperFunctions.hasTooManyPriceUpdates(material)) {
+            // Check for too many price updates
+            bool manyUpdates = hasTooManyPriceUpdates(id);
+            if (manyUpdates) {
                 material.isAvailable = false;
-                material.reviewPriceUpdate = params.price;
-                material.reviewReason = dataStructures.getFrequentUpdates();
+                material.reviewPriceUpdate = price;
+                material.reviewReason = "FREQUENT_UPDATES";
 
-                emit PriceUpdateRequested(params.id, material.price, params.price, dataStructures.getFrequentUpdates());
+                dataStructures.setMaterial(id, material);
+                emit PriceUpdateRequested(id, material.price, price, "FREQUENT_UPDATES");
                 return;
             }
 
-            bool isPriceValid = helperFunctions.validateNewPrice(params.name, params.price);
+            // Validate the new price
+            bool isPriceValid = validateNewPrice(name, price);
             if (!isPriceValid) {
                 material.isAvailable = false;
-                material.reviewPriceUpdate = params.price;
-                material.reviewReason = dataStructures.getHigherPrice();
-                emit PriceUpdateRequested(params.id, material.price, params.price, dataStructures.getHigherPrice());
+                material.reviewPriceUpdate = price;
+                material.reviewReason = "HIGHER_PRICE";
+                dataStructures.setMaterial(id, material);
+                emit PriceUpdateRequested(id, material.price, price, "HIGHER_PRICE");
                 return;
             }
+            material.price = price; 
+            dataStructures.setMaterial(id, material);
+            emit MaterialUpdated(id);
         }
 
-        // Update the material in storage using the setter function
-        dataStructures.setMaterial(params.id, material);
+    }
 
-        emit MaterialUpdated(params.id);
+    function updateMaterialQuantity(uint256 id, uint256 newQuantity) public {
+        DataStructures.RawMaterial memory material = dataStructures.getMaterial(id);
+        material.quantityAvailable = newQuantity;
+        dataStructures.setMaterial(id, material);
+        emit MaterialUpdated(id);
     }
 
 
@@ -197,5 +192,50 @@ contract SupplierManagement2 {
 
     function getAllManufacturerRawMaterials(address manufacturer) external view returns (uint[] memory) {
         return dataStructures.getManufacturerOrders(manufacturer);
+    }
+
+    // helpers
+    // validators
+    function validateNewPrice(string memory _name, uint256 _newPrice) internal view returns (bool) {
+        uint256 materialIdCounter = dataStructures.getMaterialIdCounter();
+        bool foundMaterial = false;
+        uint256 highestPrice = 0; 
+        
+        // find the highest price 
+        for (uint256 i = 1; i <= materialIdCounter; i++) {
+            DataStructures.RawMaterial memory material = dataStructures.getMaterial(i);
+            
+            if (keccak256(bytes(material.name)) == keccak256(bytes(_name)) && 
+                !material.isDeleted) {
+                foundMaterial = true;
+                if (material.price > highestPrice) {
+                    highestPrice = material.price;
+                }
+            }
+        }
+        
+        // check if new price is higher
+        if (foundMaterial && _newPrice > highestPrice) {
+            return false;
+        }
+        
+        return true;
+    }
+
+    function hasTooManyPriceUpdates(uint256 id) internal view returns (bool) {
+        DataStructures.RawMaterial memory material = dataStructures.getMaterial(id); 
+
+        uint256 updateCount = 0;
+        uint256 sixMonthsAgo = block.timestamp - 15_552_000;
+
+        for (uint256 i = 0; i < material.priceUpdateTimestamps.length; i++) {
+            if (material.priceUpdateTimestamps[i] > sixMonthsAgo) {
+                updateCount++;
+                if (updateCount > 2) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

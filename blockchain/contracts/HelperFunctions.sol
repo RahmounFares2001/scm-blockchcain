@@ -24,9 +24,11 @@ contract HelperFunctions {
         return true;
     }
 
-    function hasTooManyPriceUpdates(DataStructures.RawMaterial memory material) public view returns (bool) {
+    function hasTooManyPriceUpdates(uint256 id) external view returns (bool) {
+        DataStructures.RawMaterial memory material = dataStructures.getMaterial(id); 
+
         uint256 updateCount = 0;
-        uint256 sixMonthsAgo = block.timestamp - dataStructures.getSixMonths(); 
+        uint256 sixMonthsAgo = block.timestamp - dataStructures.getSixMonths();
 
         for (uint256 i = 0; i < material.priceUpdateTimestamps.length; i++) {
             if (material.priceUpdateTimestamps[i] > sixMonthsAgo) {
@@ -39,8 +41,9 @@ contract HelperFunctions {
         return false;
     }
 
+
     // check if he is the material owner
-    function isMaterialOwner(uint256 _id) public view returns (bool) {
+    function isMaterialOwner(uint256 _id) external view returns (bool) {
         // Get the array of materials owned by the message sender
         uint256[] memory supplierMaterials = dataStructures.getSupplierMaterials(msg.sender); // Use getter function
         for (uint256 i = 0; i < supplierMaterials.length; i++) {
@@ -52,7 +55,7 @@ contract HelperFunctions {
     }
 
     // Helper function to convert uint to string
-    function toString(uint256 value) public pure returns (string memory) {
+    function toString(uint256 value) external pure returns (string memory) {
         if (value == 0) {
             return "0";
         }
@@ -75,14 +78,14 @@ contract HelperFunctions {
     }
 
     // Helper function to get review reason (for admin interface)
-    function getReviewReason(uint256 _id) public view returns (string memory) {
+    function getReviewReason(uint256 _id) external view returns (string memory) {
         require(_id > 0 && _id <= dataStructures.getMaterialIdCounter(), "Invalid material ID");
         DataStructures.RawMaterial memory material = dataStructures.getMaterial(_id); // Use getter function
         return material.reviewReason;
     }
 
     // create hash from order details
-    function createProductHash(uint256 quantity, uint256 producedAt, uint256 shippedAt) public pure returns (uint256) {
+    function createProductHash(uint256 quantity, uint256 producedAt, uint256 shippedAt) external pure returns (uint256) {
         return uint256(keccak256(abi.encodePacked(quantity, producedAt, shippedAt)));
     }
 }

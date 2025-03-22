@@ -8,7 +8,6 @@ export default function SupplierDetails({ data: clickedData }) {
 
   // Destructure the supplier and materials from clickedData
   const { supplier, materials } = clickedData;
-  console.log(supplier)
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-lg max-w-2xl w-full z-50">

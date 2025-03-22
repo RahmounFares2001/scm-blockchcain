@@ -11,13 +11,13 @@ import DataStructuresABI from "./DataStructures.json";
 export const adminAddress = '0x8dE0DDA75de90ae6125d78D17a9E20e3590a7b74';
 
 export const contractAddresses = {
-  "UserManagement": "0xaaC1a2c2ab720464Ec37Fd37140db443079eF05D",
-  "SupplierManagement": "0x9a9b497bD5aB214c9d15b6324e1dD52cCD733Ec1",
-  "SupplierManagement2": "0x7446e283Be96e30Abb39Cb6148a4f5185d9421F6",
-  "OrderManagement": "0xbD3B58C5512DA8a5F18D97f4Ab4d1D42db14fE8e",
-  "OrderManagement2": "0xaaBf1355adeA3EDec2Dea16244A6A92BF2c36819",
-  "Dashboard": "0x34F73Be06de0f5E30A251586790b47564CcE05a6",
-  "DataStructures": "0x229c9796D28DAce8378Dc63529cE832Dde2C3051"
+  "UserManagement": "0xB46abBa5402d890eCB3A427534473DC74DCFFdC7",
+  "SupplierManagement": "0x622c4426DB4Fc462B1Fe4Dc76d29223280FA68c9",
+  "SupplierManagement2": "0xFD0d3C78C6BD22DaeB3209832Fe29b28362B73D0",
+  "OrderManagement": "0xB901707eAa382E60891b647779827EB5832D3aE3",
+  "OrderManagement2": "0xb35444338d1FCB255A6D3112c0d52d17E01De143",
+  "Dashboard": "0xf704e45BA716aD99100183C216A0B9e74D529a0c",
+  "DataStructures": "0xBaA7f47f3D2654c0d5159dD24b688edb114A5100"
 };
 
 export const contractABIs = {
@@ -41,6 +41,7 @@ export const createEthereumContract = async (contractName) => {
 
         const provider = new ethers.BrowserProvider(window.ethereum);
         const signer = await provider.getSigner(accounts[0]);
+
         const contract = new ethers.Contract(
             contractAddresses[contractName],
             contractABIs[contractName],

@@ -18,18 +18,7 @@ import MaterialDetails from "../materialOrders/MaterialDetails";
 
 export function RawMaterialsTable() {
   const { materials, loading, error, fetchMaterials } = useGetAllMaterials();
-    const material = [
-        {
-            id:1,
-            name : "",
-            description: "",
-            price: 0,
-            quantityAvailable: 0,
-            namee: "",
-            reliabilityRating: 0,
-            isFraud: ""
-        }
-    ]
+
 
     // handle actions
     const [clickedData, setClickedData] = useState([])
