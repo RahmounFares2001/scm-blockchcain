@@ -72,13 +72,13 @@ import useGetAllMaterialOrders from "@/app/hooks/suppliers/useGetAllMaterialOrde
               <TableCell>{item.price}</TableCell>
               <TableCell className="text-right" >
                 {item.isCanceled ? (
-                  <span className="text-red-500">Canceled</span>
+                  <span className="text-red-700 font-bold">Canceled</span>
                 ) : item.isDelivered ? (
-                  <span className="text-green-500">Delivered</span>
+                  <span className="text-green-700 font-bold">Delivered</span>
                 ) : item.isShipped ? (
-                  <span className="text-yellow-500">Shipped</span>
+                  <span className="text-yellow-700 font-bold">Shipped</span>
                 ) : (
-                  <span className="text-gray-500">Pending</span>
+                  <span className="text-yellow-700 font-bold">Pending</span>
                 )}
               </TableCell>
             </TableRow>

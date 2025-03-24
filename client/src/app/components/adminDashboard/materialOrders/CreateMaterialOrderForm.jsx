@@ -40,13 +40,16 @@ export default function CreateRawMaterialOrderForm({ data: clickedData }) {
     },
     validationSchema,
     onSubmit: async (values, actions) => {
+      if(clickedData.material.quantityAvailable < values.quantityOrdered ) {
+        alert("Low stock of Raw Materials available") 
+      } 
       const success = await createOrderRawMaterial(
         values.supplierAddress,
         values.manufacturerAddress,
         clickedData.material.name,
         clickedData.material.id.toString(),
         values.quantityOrdered,
-        clickedData.material.price,
+        parseFloat(clickedData.material.price),
         Math.floor(new Date(values.shouldArriveAt).getTime() / 1000)
       );
 
@@ -65,14 +68,16 @@ export default function CreateRawMaterialOrderForm({ data: clickedData }) {
   }, [clickedData]);
 
   return (
-    <div className='flex flex-col justify-center items-center gap-5 h-max w-1/2 z-50 bg-white px-10 py-8 rounded-lg'>
+    <div className='flex flex-col justify-center items-center gap-5 w-1/2
+             z-50 bg-white rounded-lg h-4/5'>
       <form
         autoComplete='off'
         onSubmit={formik.handleSubmit}
-        className='w-full flex flex-col gap-5 text-sm'
+        className='w-full px-10 py-8  flex flex-col gap-5 text-sm overflow-auto'
       >
         {/* Supplier Address (disabled) */}
         <div className='w-full flex flex-col gap-2'>
+          <h1 className='font-bold text-xl pb-3' >Order Raw Material</h1>
           <label htmlFor="supplierAddress">Supplier Address</label>
           <input
             type="text"

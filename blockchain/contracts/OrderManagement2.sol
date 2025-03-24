@@ -14,15 +14,6 @@ contract OrderManagement2 {
         dataStructures = DataStructures(_dataStructuresAddress);
     }
 
-    // Struct to group client order parameters
-    struct ClientOrderParams {
-        uint256 orderId;
-        string clientName;
-        string clientAddress;
-        uint256 clientProductQuantity;
-        uint256 shouldArriveToClientAt;
-    }
-
     // Modifier to restrict access to manufacturers
     modifier onlyManufacturer() {
         require(dataStructures.getUser(msg.sender).role == DataStructures.Role.MANUFACTURER, "Only manufacturers can perform this action");
@@ -128,46 +119,49 @@ contract OrderManagement2 {
     event ClientOrderAdded(uint256 indexed clientOrderId, uint256 indexed orderId, string clientName);
 
 
-    function addClientOrder(ClientOrderParams memory params) external onlyDistributor {
-        require(params.orderId > 0 && params.orderId <= dataStructures.getOrderCounter(), "Invalid Order ID");
+    function addClientOrder(
+        uint256 orderId,
+        string memory clientName,
+        string memory clientAddress,
+        uint256 clientProductQuantity,
+        uint256 shouldArriveToClientAt
+    ) external onlyDistributor {
+        // Récupérer la commande depuis le stockage
+        DataStructures.Order memory order = dataStructures.getOrder(orderId);
 
-        // Fetch the order from storage
-        DataStructures.Order memory order = dataStructures.getOrder(params.orderId);
-
+        // Vérifier que la commande est arrivée chez le distributeur
         require(order.isArrivedToDistributor, "Order not yet at distributor");
-        require(params.clientProductQuantity <= order.productQuantity, "Not enough stock available");
 
-        // Reduce Order.productQuantity
-        order.productQuantity -= params.clientProductQuantity;
+        order.productQuantity -= clientProductQuantity;
 
-        // Save the updated order back to storage
-        dataStructures.setOrder(params.orderId, order);
+        // Sauvegarder la commande mise à jour dans le stockage
+        dataStructures.setOrder(orderId, order);
 
-        // Increment the client order counter
+        // Incrémenter le compteur de commandes clients
         uint256 clientOrderCounter = dataStructures.getClientOrderCounter();
         clientOrderCounter++;
         dataStructures.incrementClientOrderCounter();
 
-        // Create a new client order
+        // Créer une nouvelle commande client
         DataStructures.ClientOrder memory newClientOrder = DataStructures.ClientOrder({
             id: clientOrderCounter,
-            orderId: params.orderId,
-            clientName: params.clientName,
-            clientAddress: params.clientAddress,
-            clientProductQuantity: params.clientProductQuantity,
-            shouldArriveToClientAt: params.shouldArriveToClientAt,
+            orderId: orderId,
+            clientName: clientName,
+            clientAddress: clientAddress,
+            clientProductQuantity: clientProductQuantity,
+            shouldArriveToClientAt: shouldArriveToClientAt,
             isShippedToClient: false,
             shippedToClientAt: 0,
             isArrivedToClient: false,
             deliveredToClientAt: 0
         });
 
-        // Add the new client order to storage
-        dataStructures.addClientOrder(params.orderId, newClientOrder);
+        // Ajouter la nouvelle commande client au stockage
+        dataStructures.addClientOrder(orderId, newClientOrder);
         dataStructures.setClientOrderById(clientOrderCounter, newClientOrder);
 
-        // Emit the event
-        emit ClientOrderAdded(clientOrderCounter, params.orderId, params.clientName);
+        // Émettre l'événement
+        emit ClientOrderAdded(clientOrderCounter, orderId, clientName);
     }
 
     // ship client order

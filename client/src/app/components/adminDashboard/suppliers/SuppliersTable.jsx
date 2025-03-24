@@ -35,6 +35,7 @@ export function SuppliersTable() {
     error: materialsError,
     fetchMaterials: fetchSupplierMaterials,
   } = useGetSupplierMaterialsByAddress(clickedData?.supplier?.address);
+  // console.log(supplierMaterials)
 
   // Handle click
   const handleSupplierClick = async (supplier) => {
@@ -136,7 +137,7 @@ export function SuppliersTable() {
       )}
 
       {showSupplierDetails && (
-        <div className="fixed top-0 left-0 w-full h-full flex justify-center items-center overflow-auto">
+        <div className="fixed top-0 left-0 w-full h-full flex justify-center items-center">
           <SupplierDetails data={clickedData} />
           <div
             className="fixed top-0 left-0 w-full h-full bg-black/90 z-30"

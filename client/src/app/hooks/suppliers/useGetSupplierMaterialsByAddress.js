@@ -27,14 +27,23 @@ export default function useGetSupplierMaterialsByAddress(supplierAddress) {
 
       // Fetch materials for the supplier
       const data = await contract.getSupplierMaterialsByAddress(supplierAddress);
+      console.log("Raw data from contract:", data);
 
       // Format the materials
       const formattedMaterials = data.map((material) => ({
-        id: material.id.toString(),
-        name: material.name,
-        quantity: material.quantity.toString(),
-        supplierAddress: material.supplierAddress,
-        createdAt: new Date(material.createdAt * 1000).toLocaleString(),
+        id: Number(material[0]), 
+        supplierAddress: material[1],
+        name: material[2],
+        description: material[3], 
+        price: Number(material[4]),
+        quantityAvailable: Number(material[5]), 
+        reviewPriceUpdate: Number(material[6]), 
+        isAvailable: material[7],
+        timestamp: new Date(Number(material[8]) * 1000).toLocaleString(), 
+        updatePriceRaison: material[9], 
+        priceUpdateTimestamps: material[10].map((timestamp) => Number(timestamp)), 
+        reviewReason: material[11], 
+        isDeleted: material[12],
       }));
 
       setMaterials(formattedMaterials);

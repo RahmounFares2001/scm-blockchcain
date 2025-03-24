@@ -11,6 +11,7 @@ import sideBarData from "./sideBarData";
 import { useDispatch, useSelector } from 'react-redux';
 import { setUi } from '@/app/globalRedux/features/ui/uiSlice';
 import { usePathname } from 'next/navigation';
+import Image from 'next/image';
 
 
 export default function SideBar() {
@@ -27,13 +28,17 @@ export default function SideBar() {
      return index === dashboardIndex + 1;
    });
 
+
+
   return (
     <div className={`${showSideBar ? "w-[240px] fixed" : "w-max px-5" } h-dvh top-0 bottom-0 left-0 flex flex-col`}
           onMouseEnter={() => {dispatch(setUi({key: "showHoveredSideBar", value: true}))}}
           onMouseLeave={() => {dispatch(setUi({key: "showHoveredSideBar", value: false}))}}
           onClick={()=> {dispatch(setUi({key: "dropProfileMenu", value: false}))}} >
 
-      <div className={`${showSideBar ? "py-5" : "h-16" } flex justify-center items-center border-b border-gray-600`} >
+      <div className={`${showSideBar ? "py-5" : "h-16" } flex gap-3 justify-center items-center border-b border-gray-600`} >
+        <Image src="/logo.png" width={500} height={500} alt='Logo'
+                className='w-12' />
         <h1 className='font-bold text-2xl cursor-pointer text-gray-200' >{showSideBar && "TracChain"}</h1>
       </div> 
 

@@ -279,6 +279,13 @@ contract DataStructures {
         manufacturerOrders[_manufacturerAddress].push(_orderId);
     }
 
+    function setOrderRawMaterialCounter(uint256 _newCounter) external {
+        orderRawMaterialCounter = _newCounter;
+    }
+    function setOrderCounter(uint256 _newCounter) external {
+        orderCounter = _newCounter;
+    }
+
     function getManufacturerOrders(address _manufacturerAddress) external view returns (uint[] memory) {
         return manufacturerOrders[_manufacturerAddress];
     }

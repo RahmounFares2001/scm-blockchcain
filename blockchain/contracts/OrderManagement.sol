@@ -14,33 +14,6 @@ contract OrderManagement {
         dataStructures = DataStructures(_dataStructuresAddress);
     }
 
-    // Struct to group raw material order parameters
-    struct OrderRawMaterialParams {
-        address supplierAddress;
-        address manufacturerAddress;
-        string materialName;
-        string materialId;
-        uint256 quantityOrdered;
-        uint256 price;
-        uint256 shouldArriveAt;
-    }
-
-    // Struct to group product order parameters
-    struct OrderParams {
-        address manufacturerAddress;
-        address distributorAddress;
-        string productName;
-        uint256 productQuantity;
-    }
-
-    // Struct to group client order parameters
-    struct ClientOrderParams {
-        uint256 orderId;
-        string clientName;
-        string clientAddress;
-        uint256 clientProductQuantity;
-        uint256 shouldArriveToClientAt;
-    }
 
     // Modifier to restrict access to admin
     modifier onlyAdmin() {
@@ -56,27 +29,52 @@ contract OrderManagement {
 
 
     // raw material orders
-    function createOrderRawMaterial(OrderRawMaterialParams memory params) external {
+    function createOrderRawMaterial(
+        address supplierAddress,
+        address manufacturerAddress,
+        string memory materialName,
+        string memory materialId,
+        uint256 quantityOrdered,
+        uint256 price,
+        uint256 shouldArriveAt
+    ) external {
+        // Récupérer la matière première correspondante
+        uint256 materialIdInt = stringToUint(materialId); // Convertir materialId en uint256
+        DataStructures.RawMaterial memory material = dataStructures.getMaterial(materialIdInt);
+
+        // Réduire la quantité disponible
+        material.quantityAvailable -= quantityOrdered;
+
+        // Mettre à jour la matière première dans le stockage
+        dataStructures.setMaterial(materialIdInt, material);
+        
+        // Incrémenter le compteur de commandes
         uint256 orderRawMaterialCounter = dataStructures.getOrderRawMaterialCounter();
         orderRawMaterialCounter++;
+        dataStructures.setOrderRawMaterialCounter(orderRawMaterialCounter);
 
+
+        // Ajouter la commande de matière première
         dataStructures.addRawMaterialOrder(orderRawMaterialCounter, DataStructures.OrderRawMaterial({
             id: orderRawMaterialCounter,
-            supplierAddress: params.supplierAddress,
-            manufacturerAddress: params.manufacturerAddress,
-            materialName: params.materialName,
-            materialId: params.materialId,
-            quantityOrdered: params.quantityOrdered,
+            supplierAddress: supplierAddress,
+            manufacturerAddress: manufacturerAddress,
+            materialName: materialName,
+            materialId: materialId,
+            quantityOrdered: quantityOrdered,
             quantityreceived: 0,
-            price: params.price,
+            price: price,
             shippedAt: 0,
-            shouldArriveAt: params.shouldArriveAt,
+            shouldArriveAt: shouldArriveAt,
             arrivedAt: 0,
             status: "Pending"
         }));
 
-        dataStructures.addManufacturerOrder(params.manufacturerAddress, orderRawMaterialCounter);
-        emit RawMaterialOrderCreated(orderRawMaterialCounter, params.manufacturerAddress, params.supplierAddress);
+        // Ajouter la commande au fabricant
+        dataStructures.addManufacturerOrder(manufacturerAddress, orderRawMaterialCounter);
+
+        // Émettre un événement
+        emit RawMaterialOrderCreated(orderRawMaterialCounter, manufacturerAddress, supplierAddress);
     }
 
     function shipRawMaterial(uint orderId) external {
@@ -118,28 +116,39 @@ contract OrderManagement {
     }
 
     // product orders
-    function createOrder(OrderParams memory params) external onlyAdmin {
+    function createOrder(
+        address manufacturerAddress,
+        address distributorAddress,
+        string memory productName,
+        uint256 productQuantity
+    ) external onlyAdmin {
+        // Incrémenter le compteur de commandes
         uint256 orderCounter = dataStructures.getOrderCounter();
         orderCounter++;
+        dataStructures.setOrderCounter(orderCounter);
 
+        // Ajouter la commande
         dataStructures.addOrder(orderCounter, DataStructures.Order({
             id: orderCounter,
-            manufacturerAddress: params.manufacturerAddress,
+            manufacturerAddress: manufacturerAddress,
             isProduced: false,
             producedAt: 0,
             isShippedToDistributor: false,
             shippedToDistributorAt: 0,
-            distributorAddress: params.distributorAddress,
+            distributorAddress: distributorAddress,
             isArrivedToDistributor: false,
             arrivedToDistributorAt: 0,
-            productName: params.productName,
-            productQuantity: params.productQuantity,
+            productName: productName,
+            productQuantity: productQuantity,
             productHash: 0,
             orderStatus: "Pending Production"
         }));
 
+        // Ajouter l'ID de la commande
         dataStructures.addOrderId(orderCounter);
-        emit OrderCreated(orderCounter, params.manufacturerAddress, params.distributorAddress, params.productName);
+
+        // Émettre un événement
+        emit OrderCreated(orderCounter, manufacturerAddress, distributorAddress, productName);
     }
 
     function getAllOrders() external view returns (DataStructures.Order[] memory) {
@@ -193,5 +202,20 @@ contract OrderManagement {
         }
 
         return orders;
+    }
+
+    // helper functions
+    function stringToUint(string memory s) internal pure returns (uint256) {
+        bytes memory b = bytes(s);
+        uint256 result = 0;
+        for (uint256 i = 0; i < b.length; i++) {
+            uint256 c = uint256(uint8(b[i]));
+            if (c >= 48 && c <= 57) {
+                result = result * 10 + (c - 48);
+            } else {
+                revert("Invalid character in string");
+            }
+        }
+        return result;
     }
 }

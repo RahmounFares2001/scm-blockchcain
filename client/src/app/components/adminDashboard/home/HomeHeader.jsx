@@ -6,10 +6,8 @@ import React, { useState } from 'react'
 
 import {motion} from "framer-motion";
 
-
 // icons
 import { GiHamburgerMenu } from "react-icons/gi";
-
 
 export default function HomeHeader() {
 
@@ -29,8 +27,6 @@ export default function HomeHeader() {
     <nav className='flex justify-between items-center text-gray-200
               md:px-20 md:py-10 sm:px-6 sm:py-6 px-3 py-6 home '>
       
-
-      
       {/* overlay */}
         {menuPressed && 
           <div className='fixed bg-gray-400/40 index-2 top-0 right-0 left-0 w-screen h-full'
@@ -38,14 +34,15 @@ export default function HomeHeader() {
           </div>  }
 
       {/* logo */}
-      <motion.div className='flex items-center gap-2 cursor-pointer' 
+      <motion.div className='flex items-center gap-3 cursor-pointer' 
                   initial={{opacity: 0, y: '-5vh'}}
                   animate={{opacity: 1, y: '0vh'}}
                   transition={{delay: 0.2, duration: 0.2}}>
+            <Image src="/logo.png" width={500} height={500} alt='Logo'
+                className='w-12' />
             <h1 className='md:text-2xl text-sm font-bold'>TracChain</h1>
       </motion.div>
       
-
       
       {/* links */}
         <motion.ul className='lg:flex items-center gap-7 xl:gap-10 hidden pr-96'
@@ -56,7 +53,6 @@ export default function HomeHeader() {
           <li onClick={()=>{scrollBtn('services')}} className='cursor-pointer hover:text-gray-400 hover:border-b-2 hover:border-b-gray-400 pb-1'>Services</li>
           <li onClick={()=>{scrollBtn('contact')}} className='cursor-pointer hover:text-gray-400 hover:border-b-2 hover:border-b-gray-400 pb-1'>Contact</li>
         </motion.ul>
-        
 
         {/* responsive menu show */}
         {menuPressed && 

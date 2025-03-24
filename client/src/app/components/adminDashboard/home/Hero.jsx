@@ -31,6 +31,9 @@ export default function Hero() {
       console.log("User role:", userRole);
       console.log("userisRegistered:", userisRegistered);
 
+      // Stocker le rôle dans un cookie
+      document.cookie = `userRole=${userRole.toString()}; path=/; max-age=86400`; // 1 jour
+
       if (userRole === 0n) { // Role.ADMIN
         router.push('/adminDashboard');
       } else if (userRole === 1n) { // Role.SUPPLIER

@@ -1,6 +1,7 @@
 import { Inter, Roboto_Mono, Poppins } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./globalRedux/providers";
+import { Suspense } from "react";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -29,7 +30,11 @@ export default function RootLayout({ children }) {
       <body
         className={`${inter.variable} ${poppins.variable} ${robotoMono.variable} antialiased`}
       >
-        <Providers>{children}</Providers>
+        <Providers>
+          <Suspense>
+            {children}
+          </Suspense>
+        </Providers>
       </body>
     </html>
   );

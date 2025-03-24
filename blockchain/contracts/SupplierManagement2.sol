@@ -40,8 +40,15 @@ contract SupplierManagement2 {
         DataStructures.RawMaterial memory material = dataStructures.getMaterial(id);
 
         if (price != material.price) {
-            uint256 updateTimestamp = block.timestamp;
-            dataStructures.addPriceUpdateTimestamp(id, updateTimestamp);
+
+            uint256[] memory newPriceUpdateTimestamps = new uint256[](material.priceUpdateTimestamps.length + 1);
+            // copy old to the new table
+            for (uint256 i = 0; i < material.priceUpdateTimestamps.length; i++) {
+                newPriceUpdateTimestamps[i] = material.priceUpdateTimestamps[i];
+            }
+            // add new 
+            newPriceUpdateTimestamps[newPriceUpdateTimestamps.length - 1] = block.timestamp;
+            material.priceUpdateTimestamps = newPriceUpdateTimestamps;
 
             // Update the material fields
             material.updatePriceRaison = updatePriceRaison;
@@ -68,6 +75,8 @@ contract SupplierManagement2 {
                 emit PriceUpdateRequested(id, material.price, price, "HIGHER_PRICE");
                 return;
             }
+
+            
             material.price = price; 
             dataStructures.setMaterial(id, material);
             emit MaterialUpdated(id);
@@ -226,16 +235,14 @@ contract SupplierManagement2 {
         DataStructures.RawMaterial memory material = dataStructures.getMaterial(id); 
 
         uint256 updateCount = 0;
-        uint256 sixMonthsAgo = block.timestamp - 15_552_000;
+        uint256 sixMonthsAgo = block.timestamp - dataStructures.getSixMonths();
 
         for (uint256 i = 0; i < material.priceUpdateTimestamps.length; i++) {
             if (material.priceUpdateTimestamps[i] > sixMonthsAgo) {
                 updateCount++;
-                if (updateCount > 2) {
-                    return true;
-                }
             }
         }
-        return false;
+
+        return updateCount > 2;
     }
 }

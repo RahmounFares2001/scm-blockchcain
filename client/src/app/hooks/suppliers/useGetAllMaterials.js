@@ -24,34 +24,38 @@ export default function useGetAllMaterials() {
         return;
       }
 
-      const data = await contract.methods.getAllMaterials().call();
+      const data = await contract.getAllMaterials();
 
-      const formattedMaterials = data.map((item) => ({
-        material: {
-          id: item.material.id.toNumber(),
-          supplierAddress: item.material.supplierAddress,
-          name: item.material.name,
-          description: item.material.description,
-          price: item.material.price.toNumber(),
-          quantityAvailable: item.material.quantityAvailable.toNumber(),
-          reviewPriceUpdate: item.material.reviewPriceUpdate.toNumber(),
-          isAvailable: item.material.isAvailable,
-          timestamp: item.material.timestamp.toNumber(),
-          updatePriceRaison: item.material.updatePriceRaison,
-          priceUpdateTimestamps: item.material.priceUpdateTimestamps.map((timestamp) => timestamp.toNumber()),
-          reviewReason: item.material.reviewReason,
-          isDeleted: item.material.isDeleted,
-        },
-        supplier: {
-          name: item.supplier.name,
-          reliabilityRating: item.supplier.reliabilityRating.toNumber(),
-          isFraud: item.supplier.isFraud,
-          place: item.supplier.place,
-          emailAddress: item.supplier.emailAddress,
-          violations: item.supplier.violations,
-          isDeleted: item.supplier.isDeleted,
-        },
-      }));
+
+      const formattedMaterials = data.map((item) => {
+        const material = {
+          id: Number(item.material[0]),
+          supplierAddress: item.material[1],
+          name: item.material[2],
+          description: item.material[3],
+          price: Number(item.material[4]),
+          quantityAvailable: Number(item.material[5]),
+          reviewPriceUpdate: Number(item.material[6]),
+          isAvailable: item.material[7],
+          timestamp: Number(item.material[8]),
+          updatePriceRaison: item.material[9],
+          priceUpdateTimestamps: item.material[10].map((timestamp) => Number(timestamp)),
+          reviewReason: item.material[11],
+          isDeleted: item.material[12],
+        };
+
+        const supplier = {
+          name: item.supplier[0],
+          reliabilityRating: Number(item.supplier[1]),
+          isFraud: item.supplier[2],
+          place: item.supplier[3],
+          emailAddress: item.supplier[4],
+          violations: item.supplier[5],
+          isDeleted: item.supplier[6],
+        };
+
+        return { material, supplier };
+      });
 
       setMaterials(formattedMaterials);
     } catch (err) {
