@@ -62,6 +62,10 @@ export default function useGetAllMaterialOrders() {
       } catch (err) {}
 
       const formattedOrders = ordersData.map((item) => {
+        const shouldArriveDate = new Date(Number(item[9]) * 1000);
+        const shippedDate = item[8] ? new Date(Number(item[8]) * 1000) : null;
+        const arrivedDate = item[10] ? new Date(Number(item[10]) * 1000) : null;
+
         const order = {
           id: Number(item[0]),
           supplierAddress: item[1],
@@ -71,9 +75,9 @@ export default function useGetAllMaterialOrders() {
           quantityOrdered: Number(item[5]),
           quantityReceived: Number(item[6]),
           price: Number(item[7]),
-          shippedAt: Number(item[8]),
-          shouldArriveAt: Number(item[9]),
-          arrivedAt: Number(item[10]),
+          shippedAt: shippedDate ? shippedDate.toLocaleString() : "Not shipped yet",
+          shouldArriveAt: shouldArriveDate ? shouldArriveDate.toLocaleString() : "Not specified",
+          arrivedAt: arrivedDate ? arrivedDate.toLocaleString() : "Not arrived yet",
           status: item[11],
         };
 

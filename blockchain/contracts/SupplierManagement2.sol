@@ -243,6 +243,6 @@ contract SupplierManagement2 {
             }
         }
 
-        return updateCount > 2;
-    }
+        return updateCount > 1;
+    }   
 }

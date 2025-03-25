@@ -34,7 +34,7 @@ export default function page() {
         <div className='flex justify-between items-center' >
           <h1 className='text-xl' >Raw Material Orders</h1>      
 
-          <Link href="/adminDashboard/addMaterialOrder" >
+          <Link href="/adminDashboard/rawMaterials" >
             <button href='/adminDashboard/manufactories'
                 className='px-10 py-2 border bg-primary hover:bg-green-800 
                 text-white font-bold text-sm rounded-lg shadow-md shadow-gray-300'   >

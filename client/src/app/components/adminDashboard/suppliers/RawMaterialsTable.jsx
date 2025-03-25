@@ -18,7 +18,6 @@ import MaterialDetails from "../materialOrders/MaterialDetails";
 
 export function RawMaterialsTable() {
   const { materials, loading, error, fetchMaterials } = useGetAllMaterials();
-  console.log(materials)
   const [clickedData, setClickedData] = useState([]);
   const [showOrderForm, setShowOrderForm] = useState(false);
   const [showDetailsForm, setShowDetailsForm] = useState(false);

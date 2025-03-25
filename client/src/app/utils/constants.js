@@ -11,13 +11,13 @@ import DataStructuresABI from "./DataStructures.json";
 export const adminAddress = '0x8dE0DDA75de90ae6125d78D17a9E20e3590a7b74';
 
 export const contractAddresses = {
-  "UserManagement": "0x1E8CB9d20CEb44b5691052e3ce83f13cE94dd7B0",
-  "SupplierManagement": "0x5A4a7cDED80801cDDE929dfc153D3e86C6f6B3CA",
-  "SupplierManagement2": "0xCfe9b1d96Cb849fE12a9948f0D7484C5975971e2",
-  "OrderManagement": "0x61ea0cf6717f227E808b9a15Cb180d663C6Ba753",
-  "OrderManagement2": "0xe75ab3E3264ec06EaaE0060E91b7BCaBaF459828",
-  "Dashboard": "0x79dff1c81B3B0C345523d3d3e6b4e02d19ffAa5c",
-  "DataStructures": "0xA6bF895e8Dc7401faC48c2DCAbD0fe1c0604E113"
+  "UserManagement": "0x0E7Eaac848a6E35E2a5ECCa402de40982d4393AF",
+  "SupplierManagement": "0x26b18576bcdc32FA6C0BAB4306B0343dD09F3075",
+  "SupplierManagement2": "0x6bB9c3871ea83374ED54aEf83638B5B77cAF6BE5",
+  "OrderManagement": "0x8f5468dcE0203cf618B91D2F9f3de72aA25DDceC",
+  "OrderManagement2": "0xBAa9FC314B3EE772EbA698108123390C1417e9FE",
+  "Dashboard": "0x0d93Ec9cfa5bF27C5F320d372619eDF0c70497ab",
+  "DataStructures": "0x2e5994f3944e305b8E5cfb7D441F58c4A2761873"
 };
 
 export const contractABIs = {
