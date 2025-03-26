@@ -42,13 +42,13 @@ export function MaterialOrdersTable() {
     const getStatusBadge = (status) => {
         switch (status) {
             case 'Shipped':
-                return <span className="text-yellow-600 font-bold">Shipped</span>;
+                return <span className="text-indigo-700 font-bold">Shipped</span>;
             case 'Delivered':
-                return <span className="text-green-600 font-bold">Delivered</span>;
+                return <span className="text-green-700 font-bold">Delivered</span>;
             case 'Canceled':
-                return <span className="text-red-600 font-bold">Canceled</span>;
+                return <span className="text-red-700 font-bold">Canceled</span>;
             default:
-                return <span className="text-yellow-600 font-bold">Pending</span>;
+                return <span className="text-yellow-700 font-bold">Pending</span>;
         }
     };
 

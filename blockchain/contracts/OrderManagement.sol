@@ -167,30 +167,52 @@ contract OrderManagement {
         return dataStructures.getOrder(_orderId);
     }
 
-    function getOrderByManufacturerAddress(address _manufacturerAddress) external view returns (DataStructures.Order[] memory) {
+    function getAllManufacturerOrders() external view returns (DataStructures.Order[] memory) {
         uint256 orderCounter = dataStructures.getOrderCounter();
         uint256 count = 0;
 
-        // Count number of orders
         for (uint256 i = 0; i < orderCounter; i++) {
-            if (dataStructures.getOrder(i + 1).manufacturerAddress == _manufacturerAddress) {
+            if (dataStructures.getOrder(i + 1).manufacturerAddress == msg.sender) {
                 count++;
             }
         }
 
-        // Result table
-        DataStructures.Order[] memory _orders = new DataStructures.Order[](count);
+        DataStructures.Order[] memory manufacturerOrders = new DataStructures.Order[](count);
         uint256 index = 0;
 
         for (uint256 i = 0; i < orderCounter; i++) {
             uint256 orderId = i + 1;
-            if (dataStructures.getOrder(orderId).manufacturerAddress == _manufacturerAddress) {
-                _orders[index] = dataStructures.getOrder(orderId);
+            if (dataStructures.getOrder(orderId).manufacturerAddress == msg.sender) {
+                manufacturerOrders[index] = dataStructures.getOrder(orderId);
                 index++;
             }
         }
 
-        return _orders;
+        return manufacturerOrders;
+    }
+
+    function getAllDistributorOrders() external view returns (DataStructures.Order[] memory) {
+        uint256 orderCounter = dataStructures.getOrderCounter();
+        uint256 count = 0;
+
+        for (uint256 i = 0; i < orderCounter; i++) {
+            if (dataStructures.getOrder(i + 1).distributorAddress == msg.sender) {
+                count++;
+            }
+        }
+
+        DataStructures.Order[] memory distributorOrders = new DataStructures.Order[](count);
+        uint256 index = 0;
+
+        for (uint256 i = 0; i < orderCounter; i++) {
+            uint256 orderId = i + 1;
+            if (dataStructures.getOrder(orderId).distributorAddress == msg.sender) {
+                distributorOrders[index] = dataStructures.getOrder(orderId);
+                index++;
+            }
+        }
+
+        return distributorOrders;
     }
 
     function getAllMaterialsOrders() public view returns (DataStructures.OrderRawMaterial[] memory) {
@@ -202,6 +224,58 @@ contract OrderManagement {
         }
 
         return orders;
+    }
+
+    function getAllSupplierMaterialOrders() external view returns (DataStructures.OrderRawMaterial[] memory) {
+        // Get the total number of raw material orders
+        uint256 orderRawMaterialCounter = dataStructures.getOrderRawMaterialCounter();
+        uint256 count = 0;
+
+        for (uint256 i = 1; i <= orderRawMaterialCounter; i++) {
+            if (dataStructures.getRawMaterialOrder(i).supplierAddress == msg.sender) {
+                count++;
+            }
+        }
+
+        // array to store the supplier's raw material orders
+        DataStructures.OrderRawMaterial[] memory supplierOrders = new DataStructures.OrderRawMaterial[](count);
+        uint256 index = 0;
+
+        // populate the array with the supplier's orders
+        for (uint256 i = 1; i <= orderRawMaterialCounter; i++) {
+            DataStructures.OrderRawMaterial memory order = dataStructures.getRawMaterialOrder(i);
+            if (order.supplierAddress == msg.sender) {
+                supplierOrders[index] = order;
+                index++;
+            }
+        }
+
+        return supplierOrders;
+    }
+
+    function getManufacturerMaterialOrders() external view returns (DataStructures.OrderRawMaterial[] memory) {
+        // Get the total number of raw material orders
+        uint256 orderRawMaterialCounter = dataStructures.getOrderRawMaterialCounter();
+        uint256 count = 0;
+
+        for (uint256 i = 1; i <= orderRawMaterialCounter; i++) {
+            if (dataStructures.getRawMaterialOrder(i).manufacturerAddress == msg.sender) {
+                count++;
+            }
+        }
+
+        DataStructures.OrderRawMaterial[] memory manufacturerOrders = new DataStructures.OrderRawMaterial[](count);
+        uint256 index = 0;
+
+        for (uint256 i = 1; i <= orderRawMaterialCounter; i++) {
+            DataStructures.OrderRawMaterial memory order = dataStructures.getRawMaterialOrder(i);
+            if (order.manufacturerAddress == msg.sender) {
+                manufacturerOrders[index] = order;
+                index++;
+            }
+        }
+
+        return manufacturerOrders;
     }
 
     // helper functions

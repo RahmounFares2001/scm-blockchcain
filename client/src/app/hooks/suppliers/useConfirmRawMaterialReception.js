@@ -25,7 +25,7 @@ export default function useConfirmRawMaterialReception() {
       await tx.wait(); // Wait for transaction confirmation
 
       setSuccess(true);
-      console.log(`Order ${orderId} marked as delivered.`);
+      alert("Order marked as delivered.")
     } catch (err) {
       console.error("Error confirming raw material reception:", err);
       setError("Failed to confirm raw material reception.");

@@ -29,7 +29,10 @@ const clearFileContent = (filePath) => {
 };
 
 const main = async () => {
-  const adminAddress = '0x8dE0DDA75de90ae6125d78D17a9E20e3590a7b74'; 
+  const adminAddress = '0x8dE0DDA75de90ae6125d78D17a9E20e3590a7b74';
+  const supplierAddress = '0x56a2382c9C81Cbe57EfB63F40bb822eEBB6E8D42';
+  const manufacturerAddress = '0xb1928627cD6CfBF28e2EfbF9E16207874F0AFea8';
+  const distributorAddress = '0xF14248090D4afCc6883882274B3a3e19B48018ad';
 
   // Clear the content of constants.js
   clearFileContent(clientConstantsPath);
@@ -56,6 +59,9 @@ const main = async () => {
   const UserManagementFactory = await hre.ethers.getContractFactory("UserManagement");
   const userManagementContract = await UserManagementFactory.deploy(
     adminAddress,
+    supplierAddress,
+    manufacturerAddress,
+    distributorAddress,
     dataStructuresContract.address,
     { gasLimit: 5000000 }
   );

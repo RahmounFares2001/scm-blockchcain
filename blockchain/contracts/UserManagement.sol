@@ -8,9 +8,29 @@ contract UserManagement {
     DataStructures public dataStructures;
 
     // Constructor
-    constructor(address _adminAddress, address _dataStructuresAddress) {
-        // require(!dataStructures.getAdminCreated(), "Admin already created");
+    // constructor(address _adminAddress, address _dataStructuresAddress) {
+    //     // require(!dataStructures.getAdminCreated(), "Admin already created");
+    //     require(_adminAddress != address(0), "Invalid admin address");
+
+    //     dataStructures = DataStructures(_dataStructuresAddress);
+
+    //     // Set admin
+    //     dataStructures.addUser(_adminAddress, DataStructures.Role.ADMIN, true);
+    //     dataStructures.setAdmin(_adminAddress);
+    //     dataStructures.setAdminCreated(true);
+    // }
+    constructor(
+        address _adminAddress,
+        address _supplierAddress,
+        address _manufacturerAddress,
+        address _distributorAddress,
+        address _dataStructuresAddress
+    ) {
         require(_adminAddress != address(0), "Invalid admin address");
+        require(_supplierAddress != address(0), "Invalid supplier address");
+        require(_manufacturerAddress != address(0), "Invalid manufacturer address");
+        require(_distributorAddress != address(0), "Invalid distributor address");
+        require(_supplierAddress != _manufacturerAddress && _supplierAddress != _distributorAddress && _manufacturerAddress != _distributorAddress, "Addresses must be unique");
 
         dataStructures = DataStructures(_dataStructuresAddress);
 
@@ -18,6 +38,39 @@ contract UserManagement {
         dataStructures.addUser(_adminAddress, DataStructures.Role.ADMIN, true);
         dataStructures.setAdmin(_adminAddress);
         dataStructures.setAdminCreated(true);
+
+        // Initialize supplier
+        dataStructures.addUser(_supplierAddress, DataStructures.Role.SUPPLIER, true);
+        dataStructures.addSupplier(_supplierAddress, DataStructures.SupplierDetails({
+            name: "supplier1",
+            reliabilityRating: 5,
+            isFraud: "Reliable",
+            place: "Setif",
+            emailAddress: "supplier1@gmail.com",
+            violations: new string[](0),
+            isDeleted: false
+        }));
+        dataStructures.addSupplierAddress(_supplierAddress);
+
+        // Initialize manufacturer
+        dataStructures.addUser(_manufacturerAddress, DataStructures.Role.MANUFACTURER, true);
+        dataStructures.addManufacturer(_manufacturerAddress, DataStructures.ManufacturerDetails({
+            name: "manufacturer1",
+            email: "manufacturer1@gmail.com",
+            place: "Alger",
+            isDeleted: false
+        }));
+        dataStructures.addManufacturerAddress(_manufacturerAddress);
+
+        // Initialize distributor
+        dataStructures.addUser(_distributorAddress, DataStructures.Role.DISTRIBUTOR, true);
+        dataStructures.addDistributor(_distributorAddress, DataStructures.DistributorDetails({
+            name: "distributor1",
+            emailAddress: "distributor1@gmail.com",
+            place: "Alger",
+            isDeleted: false
+        }));
+        dataStructures.addDistributorAddress(_distributorAddress);
     }
 
     // Modifier to restrict access to admin
