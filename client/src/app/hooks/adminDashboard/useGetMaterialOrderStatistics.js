@@ -5,8 +5,8 @@ import { createEthereumContract } from "@/app/utils/constants";
 
 const useGetMaterialOrderStatistics = () => {
   const [pendingCount, setPendingCount] = useState(0);
-  const [shippedToManufacturerCount, setShippedToManufacturerCount] = useState(0);
-  const [arrivedToManufacturerCount, setArrivedToManufacturerCount] = useState(0);
+  const [shippedCount, setShippedCount] = useState(0); 
+  const [deliveredCount, setDeliveredCount] = useState(0); 
   const [canceledCount, setCanceledCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -14,27 +14,30 @@ const useGetMaterialOrderStatistics = () => {
   const fetchMaterialOrderStatistics = async () => {
     try {
       if (!window.ethereum) {
-        alert("Please install MetaMask!");
-        return;
+        throw new Error("Please install MetaMask!");
       }
 
       setLoading(true);
       setError(null);
 
       const contract = await createEthereumContract("Dashboard");
-      const [
-        pending,
-        shippedToManufacturer,
-        arrivedToManufacturer,
-        canceled,
-      ] = await contract.getMaterialOrderStatistics();
+      if (!contract) {
+        throw new Error("Failed to connect to the Dashboard contract");
+      }
+
+      // Fetch material order statistics
+      const [pending, shipped, delivered, canceled] = await contract.getMaterialOrderStatistics();
+
+      // Log for debugging (optional, can remove in production)
+      console.log("Material Order Statistics:", { pending, shipped, delivered, canceled });
 
       setPendingCount(Number(pending));
-      setShippedToManufacturerCount(Number(shippedToManufacturer));
-      setArrivedToManufacturerCount(Number(arrivedToManufacturer));
+      setShippedCount(Number(shipped)); 
+      setDeliveredCount(Number(delivered)); 
       setCanceledCount(Number(canceled));
     } catch (err) {
-      setError(err.message);
+      console.error("Error fetching material order statistics:", err);
+      setError(err.message || "Failed to fetch material order statistics");
     } finally {
       setLoading(false);
     }
@@ -46,8 +49,8 @@ const useGetMaterialOrderStatistics = () => {
 
   return {
     pendingCount,
-    shippedToManufacturerCount,
-    arrivedToManufacturerCount,
+    shippedCount,
+    deliveredCount,
     canceledCount,
     loading,
     error,

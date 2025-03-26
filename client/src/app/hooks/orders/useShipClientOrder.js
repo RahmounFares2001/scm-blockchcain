@@ -24,7 +24,7 @@ export default function useShipClientOrder() {
         setError("Error connecting to the contract");
         return;
       }
-
+      
       const tx = await contract.shipClientOrder(clientOrderId);
       await tx.wait();
 

@@ -32,7 +32,7 @@ export default function AddSupplierForm() {
       emailAddress: '',
       place: '',
     },
-    validationSchema, // Add Yup validation schema
+    validationSchema,
     onSubmit: async (values, actions) => {
       const success = await createSupplier(
         values.supplierAddress,
@@ -41,8 +41,8 @@ export default function AddSupplierForm() {
         values.emailAddress
       );
       if (success) {
-        alert('Supplier created successfully!'); // Show success alert
-        actions.resetForm(); // Reset the form after submission
+        alert('Supplier created successfully!'); 
+        actions.resetForm(); 
       }
     },
   });

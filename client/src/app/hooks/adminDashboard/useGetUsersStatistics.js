@@ -24,7 +24,7 @@ const useGetUsersStatistics = () => {
       const contract = await createEthereumContract("Dashboard");
 
       const [suppliers, manufacturers, distributors] = await contract.getUsersStatistics();
-
+      console.log("suppliers", suppliers)
       setSupplierCount(Number(suppliers));
       setManufacturerCount(Number(manufacturers));
       setDistributorCount(Number(distributors));

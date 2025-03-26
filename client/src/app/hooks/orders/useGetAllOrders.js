@@ -11,43 +11,68 @@ export default function useGetAllOrders() {
   const fetchOrders = async () => {
     try {
       if (!window.ethereum) {
-        alert("Please install MetaMask!");
-        return;
+        throw new Error("Please install MetaMask!");
       }
 
       setLoading(true);
       setError(null);
 
-      const contract = await createEthereumContract("OrderManagement");
-      if (!contract) {
-        setError("Error connecting to the contract");
-        return;
+      const orderContract = await createEthereumContract("OrderManagement");
+      if (!orderContract) {
+        throw new Error("Error connecting to the OrderManagement contract");
       }
 
-      const data = await contract.getAllOrders();
+      const userContract = await createEthereumContract("UserManagement");
+      if (!userContract) {
+        throw new Error("Error connecting to the UserManagement contract");
+      }
 
-      const formattedOrders = data.map((order) => ({
-        id: order.id.toString(),
-        manufacturerAddress: order.manufacturerAddress,
-        manufacturerName: order.manufacturerName,
-        isProduced: order.isProduced,
-        producedAt: order.producedAt.toString(),
-        isShippedToDistributor: order.isShippedToDistributor,
-        shippedToDistributorAt: order.shippedToDistributorAt.toString(),
-        distributorAddress: order.distributorAddress,
-        distributorName: order.distributorName,
-        isArrivedToDistributor: order.isArrivedToDistributor,
-        arrivedToDistributorAt: order.arrivedToDistributorAt.toString(),
-        productName: order.productName,
-        productQuantity: order.productQuantity.toString(),
-        orderStatus: order.orderStatus,
-        createdAt: order.createdAt.toString(),
-      }));
+      const data = await orderContract.getAllOrders();
+
+      // Fetch manufacturer and distributor names
+      const manufacturerMap = {};
+      const distributorMap = {};
+
+      const manufacturers = await userContract.getAllManufacturers();
+      manufacturers.addresses.forEach((addr, i) => {
+        manufacturerMap[addr] = manufacturers.names[i] || "Unknown Manufacturer";
+      });
+
+      const distributors = await userContract.getAllDistributors();
+      distributors.addresses.forEach((addr, i) => {
+        distributorMap[addr] = distributors.names[i] || "Unknown Distributor";
+      });
+
+      // Format the orders based on the Order struct
+      const formattedOrders = data.map((order) => {
+        // Convert timestamps to readable format
+        const producedAt = order.producedAt > 0 ? new Date(Number(order.producedAt) * 1000).toLocaleString() : "Not produced yet";
+        const shippedAt = order.shippedToDistributorAt > 0 ? new Date(Number(order.shippedToDistributorAt) * 1000).toLocaleString() : "Not shipped yet";
+        const arrivedAt = order.arrivedToDistributorAt > 0 ? new Date(Number(order.arrivedToDistributorAt) * 1000).toLocaleString() : "Not arrived yet";
+
+        return {
+          id: Number(order.id), 
+          manufacturerAddress: order.manufacturerAddress,
+          manufacturerName: manufacturerMap[order.manufacturerAddress] || "Unknown Manufacturer",
+          isProduced: order.isProduced,
+          producedAt: producedAt,
+          isShippedToDistributor: order.isShippedToDistributor,
+          shippedToDistributorAt: shippedAt,
+          distributorAddress: order.distributorAddress,
+          distributorName: distributorMap[order.distributorAddress] || "Unknown Distributor",
+          isArrivedToDistributor: order.isArrivedToDistributor,
+          arrivedToDistributorAt: arrivedAt,
+          productName: order.productName,
+          productQuantity: Number(order.productQuantity), 
+          productHash: Number(order.productHash), 
+          orderStatus: order.orderStatus,
+        };
+      });
 
       setOrders(formattedOrders);
     } catch (err) {
       console.error("Error fetching orders:", err);
-      setError("Failed to load orders.");
+      setError(err.message || "Failed to load orders.");
     } finally {
       setLoading(false);
     }
