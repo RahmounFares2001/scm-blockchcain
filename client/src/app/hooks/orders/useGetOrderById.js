@@ -1,18 +1,21 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { createEthereumContract } from "@/app/utils/constants";
 
-export default function useGetOrderById(orderId) {
+export default function useGetOrderById() {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const fetchOrder = async () => {
+  const fetchOrder = async (orderId) => {
     try {
       if (!window.ethereum) {
-        alert("Please install MetaMask!");
-        return;
+        throw new Error("Please install MetaMask!");
+      }
+
+      if (!orderId || isNaN(orderId) || orderId <= 0) {
+        throw new Error("Invalid Order ID provided.");
       }
 
       setLoading(true);
@@ -20,42 +23,53 @@ export default function useGetOrderById(orderId) {
 
       const contract = await createEthereumContract("OrderManagement");
       if (!contract) {
-        setError("Error connecting to the contract");
-        return;
+        throw new Error("Error connecting to the contract");
       }
 
       const data = await contract.getOrderByOrderId(orderId);
 
+      // Check if data is valid
+      if (!data || typeof data !== "object") {
+        throw new Error("Order not found or invalid data returned.");
+      }
+
+      // Fallback for undefined fields
       const formattedOrder = {
-        id: data.id.toString(),
-        manufacturerAddress: data.manufacturerAddress,
-        manufacturerName: data.manufacturerName,
-        isProduced: data.isProduced,
-        producedAt: data.producedAt.toString(),
-        isShippedToDistributor: data.isShippedToDistributor,
-        shippedToDistributorAt: data.shippedToDistributorAt.toString(),
-        distributorAddress: data.distributorAddress,
-        distributorName: data.distributorName,
-        isArrivedToDistributor: data.isArrivedToDistributor,
-        arrivedToDistributorAt: data.arrivedToDistributorAt.toString(),
-        productName: data.productName,
-        productQuantity: data.productQuantity.toString(),
-        orderStatus: data.orderStatus,
-        createdAt: data.createdAt.toString(),
+        id: data.id ? data.id.toString() : "N/A",
+        manufacturerAddress: data.manufacturerAddress || "Unknown",
+        manufacturerName: data.manufacturerName || "Unknown",
+        isProduced: data.isProduced || false,
+        producedAt: data.producedAt ? data.producedAt.toString() : "0",
+        isShippedToDistributor: data.isShippedToDistributor || false,
+        shippedToDistributorAt: data.shippedToDistributorAt ? data.shippedToDistributorAt.toString() : "0",
+        distributorAddress: data.distributorAddress || "Unknown",
+        distributorName: data.distributorName || "Unknown",
+        isArrivedToDistributor: data.isArrivedToDistributor || false,
+        arrivedToDistributorAt: data.arrivedToDistributorAt ? data.arrivedToDistributorAt.toString() : "0",
+        productName: data.productName || "Unknown",
+        productQuantity: data.productQuantity ? data.productQuantity.toString() : "0",
+        orderStatus: data.orderStatus || "Unknown",
+        createdAt: data.createdAt ? data.createdAt.toString() : "0",
       };
 
       setOrder(formattedOrder);
     } catch (err) {
-      console.error("Error fetching order:", err);
-      setError("Failed to load order.");
+      if (err.message.includes("Invalid Order ID") || err.reason === "Invalid Order ID") {
+        setError("Invalid Order ID");
+      } else {
+        console.error("Error fetching order:", err);
+        setError(err.message || "Failed to load order.");
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    if (orderId) fetchOrder();
-  }, [orderId]);
+  const reset = () => {
+    setOrder(null);
+    setError(null);
+    setLoading(false);
+  };
 
-  return { order, loading, error, refreshOrder: fetchOrder };
+  return { order, loading, error, fetchOrder, reset };
 }

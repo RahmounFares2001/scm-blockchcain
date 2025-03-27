@@ -19,21 +19,23 @@ import {
 import { useState } from "react";
 
 // Components
-import OrdersDetails from "./OrdersDetails"; 
-import DistributorConfirmDelivery from "./DistributorConfirmDelivery"; 
+import OrdersDetails from "./OrdersDetails";
+import DistributorConfirmDelivery from "./DistributorConfirmDelivery";
+import ClientOrderForm from "./ClientOrderForm"; 
 
 export default function ProductOrdersTable() {
-  // Get orders from hook
   const { orders, loading, error, fetchOrders } = useGetAllDistributorOrders();
   const [clickedData, setClickedData] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
   const [showConfirmDelivery, setShowConfirmDelivery] = useState(false);
+  const [showClientOrderForm, setShowClientOrderForm] = useState(false);
 
   // Handle closing all modals
   const handleClose = () => {
     setClickedData(null);
     setShowDetails(false);
     setShowConfirmDelivery(false);
+    setShowClientOrderForm(false);
   };
 
   // Handle Details button click
@@ -46,6 +48,12 @@ export default function ProductOrdersTable() {
   const handleConfirmClick = (order) => {
     setClickedData(order);
     setShowConfirmDelivery(true);
+  };
+
+  // Handle Order button click
+  const handleOrderClick = (order) => {
+    setClickedData(order);
+    setShowClientOrderForm(true);
   };
 
   return (
@@ -113,13 +121,22 @@ export default function ProductOrdersTable() {
                       >
                         Details
                       </button>
-                      {order.orderStatus === "Shipped to Distributor" && (
+                      {order.orderStatus === "Shipped to Distributor" ? (
                         <button
                           onClick={() => handleConfirmClick(order)}
                           className="w-20 py-1 bg-blue-700 rounded-lg hover:bg-blue-600 text-white"
                         >
                           Confirm
                         </button>
+                      ) : (
+                        order.orderStatus === "Arrived to Distributor" && (
+                          <button
+                            onClick={() => handleOrderClick(order)}
+                            className="w-20 py-1 bg-blue-700 rounded-lg hover:bg-blue-600 text-white"
+                          >
+                            Order
+                          </button>
+                        )
                       )}
                     </div>
                   </TableCell>
@@ -164,6 +181,16 @@ export default function ProductOrdersTable() {
       {showConfirmDelivery && clickedData && (
         <div className="fixed top-0 left-0 w-full h-full flex justify-center items-center z-40">
           <DistributorConfirmDelivery data={clickedData} onClose={handleClose} fetchOrders={fetchOrders} />
+          <div
+            className="fixed top-0 left-0 w-full h-full bg-black/90 z-30"
+            onClick={handleClose}
+          ></div>
+        </div>
+      )}
+
+      {showClientOrderForm && clickedData && (
+        <div className="fixed top-0 left-0 w-full h-full flex justify-center items-center z-50">
+          <ClientOrderForm data={clickedData} onClose={handleClose} fetchOrders={fetchOrders} />
           <div
             className="fixed top-0 left-0 w-full h-full bg-black/90 z-30"
             onClick={handleClose}

@@ -24,7 +24,7 @@ export default function SideBar() {
 
    // Extract currentPage
    const pagePart = pathname.split("/").find((segment, index, array) => {
-     const dashboardIndex = array.indexOf("adminDashboard");
+     const dashboardIndex = array.indexOf("distributorDashboard");
      return index === dashboardIndex + 1;
    });
 

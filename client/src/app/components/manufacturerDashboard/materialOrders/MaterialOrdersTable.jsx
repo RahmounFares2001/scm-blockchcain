@@ -105,7 +105,7 @@ export function MaterialOrdersTable() {
                     >
                       Details
                     </button>
-                    {!order.status === "Shipped" && 
+                    {order.status === "Shipped" && 
                     <button
                       onClick={() => handleActionClick(order)}
                       className="w-20 py-1 bg-blue-700 rounded-lg hover:bg-blue-600 text-white"

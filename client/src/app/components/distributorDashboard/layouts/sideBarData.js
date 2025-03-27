@@ -36,14 +36,6 @@ const sideBarData = [
     },
     {
       id: 4,
-      title: undefined,
-      name: "Add Client Order",
-      activeName: "addClientOrder",
-      icon: <IoMdAdd />,
-      href: '/distributorDashboard/addClientOrder'
-    },
-    {
-      id: 5,
       title: "ACCOUNT DETAILS",
       name: "Account",
       activeName: "account",

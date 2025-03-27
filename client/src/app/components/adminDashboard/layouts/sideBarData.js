@@ -119,14 +119,6 @@ const sideBarData = [
     {
       id: 11,
       title: "TRACABLITY",
-      name: "All Products Stages",
-      activeName: "productsStages",
-      icon: <SiStagetimer />,
-      href: '/adminDashboard/productsStages'
-    },
-    {
-      id: 12,
-      title: undefined,
       name: "Track Product",
       activeName: "trackProduct",
       icon: <PiRoadHorizonBold />,

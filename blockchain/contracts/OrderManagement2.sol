@@ -225,6 +225,39 @@ contract OrderManagement2 {
         return allClientOrders;
     }
 
+    function getDistributorClientOrders() public view onlyDistributor returns (DataStructures.ClientOrderWithOrder[] memory) {
+        address distributorAddress = msg.sender; 
+        uint256 orderCounter = dataStructures.getOrderCounter();
+        uint256 totalClientOrders = 0;
+
+        // Count client orders for the distributor
+        for (uint256 i = 1; i <= orderCounter; i++) {
+            if (dataStructures.getOrder(i).distributorAddress == distributorAddress) {
+                totalClientOrders += dataStructures.getClientOrders(i).length;
+            }
+        }
+
+        // Create result array
+        DataStructures.ClientOrderWithOrder[] memory distributorClientOrders = new DataStructures.ClientOrderWithOrder[](totalClientOrders);
+        uint256 index = 0;
+
+        // Populate client orders for the distributor
+        for (uint256 i = 1; i <= orderCounter; i++) {
+            if (dataStructures.getOrder(i).distributorAddress == distributorAddress) {
+                DataStructures.ClientOrder[] memory clientOrdersForOrder = dataStructures.getClientOrders(i);
+                for (uint256 j = 0; j < clientOrdersForOrder.length; j++) {
+                    distributorClientOrders[index] = DataStructures.ClientOrderWithOrder({
+                        clientOrder: clientOrdersForOrder[j],
+                        order: dataStructures.getOrder(i)
+                    });
+                    index++;
+                }
+            }
+        }
+
+        return distributorClientOrders;
+    }
+
     function getOrderDetailsByClientOrderId(uint256 _clientOrderId) public view returns (DataStructures.Order memory, DataStructures.ClientOrder memory) {
         require(_clientOrderId > 0 && _clientOrderId <= dataStructures.getClientOrderCounter(), "Invalid Client Order ID");
         DataStructures.ClientOrder memory clientOrder = dataStructures.getClientOrderById(_clientOrderId);

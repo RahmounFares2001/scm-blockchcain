@@ -23,7 +23,7 @@ export default function SideBar() {
 
    // Extract currentPage
    const pagePart = pathname.split("/").find((segment, index, array) => {
-     const dashboardIndex = array.indexOf("supplierDashboard");
+     const dashboardIndex = array.indexOf("manufacturerDashboard");
      return index === dashboardIndex + 1;
    });
 
