@@ -222,7 +222,7 @@ contract UserManagement {
         
         dataStructures.addSupplier(_supplierAddress, DataStructures.SupplierDetails({
             name: _name,
-            reliabilityRating: 5,
+            reliabilityRating: 50,
             isFraud: "Reliable",
             place: _place,
             emailAddress: _emailAddress,

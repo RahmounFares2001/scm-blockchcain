@@ -2,11 +2,9 @@
 pragma solidity ^0.8.0;
 
 import "./DataStructures.sol";
-import "./HelperFunctions.sol";
 import "./UserManagement.sol";
 
 contract SupplierManagement {
-    HelperFunctions public helperFunctions;
     UserManagement public userManagement;
     DataStructures public dataStructures;
 
@@ -55,81 +53,113 @@ contract SupplierManagement {
         return dataStructures.getSupplier(_supplierAddress).violations;
     }
 
+    event SupplierUpdated(address indexed supplierAddress, uint256 reliabilityRating, string isFraud, uint256 violationCount);
+    event RawMaterialOrderUpdated(uint indexed orderId, string status, uint256 quantityReceived, uint256 arrivedAt);
+
     // Function to update supplier reliability on delay
     function updateSupplierReliabilityOnDelay(address supplierAddress, uint orderId, bool confirmDelivery) external {
+        require(supplierAddress != address(0), "Invalid supplier address");
+        require(orderId > 0, "Invalid order ID");
+
+        // Fetch and validate order
         DataStructures.OrderRawMaterial memory order = dataStructures.getRawMaterialOrder(orderId);
-        uint256 delay = order.arrivedAt - order.shouldArriveAt;
-        uint256 daysDelayed = delay / 1 days;
+        require(order.id != 0, "Order does not exist");
 
-        if (daysDelayed > 0) {
-            uint256 penalty = daysDelayed / 10; // 0.1 per day
+        // Fetch and validate supplier
+        DataStructures.SupplierDetails memory supplier = dataStructures.getSupplier(supplierAddress);
+        require(bytes(supplier.name).length > 0, "Supplier not found");
 
-            DataStructures.SupplierDetails memory supplier = dataStructures.getSupplier(supplierAddress);
-            if (supplier.reliabilityRating > penalty) {
-                supplier.reliabilityRating -= penalty;
-            } else {
-                supplier.reliabilityRating = 0;
-            }
-
-            if (supplier.reliabilityRating < 3) {
-                supplier.isFraud = "Fraud";
-            }
-
-            // Create a new array in memory with one additional slot
-            string[] memory newViolations = new string[](supplier.violations.length + 1);
-
-            // Copy the existing violations to the new array
-            for (uint i = 0; i < supplier.violations.length; i++) {
-                newViolations[i] = supplier.violations[i];
-            }
-
-            // Add the new violation to the end of the array
-            string memory violation = string(abi.encodePacked("Supplier delayed by ", toString(daysDelayed), " days."));
-            newViolations[newViolations.length - 1] = violation;
-
-            // Update the supplier's violations in storage
-            supplier.violations = newViolations;
-            dataStructures.addSupplier(supplierAddress, supplier);
-        }
-
+        // Update order
+        uint256 currentTime = block.timestamp;
         if (confirmDelivery) {
-            order.status = "Delivered";
+            order.status = "Delivered Late";
             order.quantityreceived = order.quantityOrdered;
-            order.arrivedAt = block.timestamp;
+            order.arrivedAt = currentTime;
         } else {
             order.status = "Canceled";
         }
         dataStructures.addRawMaterialOrder(orderId, order);
+        emit RawMaterialOrderUpdated(orderId, order.status, order.quantityreceived, order.arrivedAt);
+
+        // Calculate delay (shouldArriveAt - arrivedAt)
+        uint256 delay;
+        if (order.arrivedAt > 0 && order.shouldArriveAt > order.arrivedAt) {
+            delay = 0; // Early arrival, no penalty
+        } else if (order.arrivedAt > order.shouldArriveAt) {
+            delay = order.arrivedAt - order.shouldArriveAt; // Late arrival
+        } else {
+            delay = currentTime > order.shouldArriveAt ? currentTime - order.shouldArriveAt : 0; 
+        }
+        uint256 daysDelayed = delay / 1 days;
+
+        if (daysDelayed > 0) {
+            // Penalty: 5 per day 
+            uint256 penaltyInTenths = daysDelayed * 4; 
+
+            if (supplier.reliabilityRating > penaltyInTenths) {
+                supplier.reliabilityRating -= penaltyInTenths; // 50 - 5 = 45 (4.5)
+            } else {
+                supplier.reliabilityRating = 0;
+            }
+
+            if (supplier.reliabilityRating < 30) { 
+                supplier.isFraud = "Fraud";
+            }
+
+            // Update violations
+            string[] memory newViolations = new string[](supplier.violations.length + 1);
+            for (uint i = 0; i < supplier.violations.length; i++) {
+                newViolations[i] = supplier.violations[i];
+            }
+            string memory violation = string(abi.encodePacked("Supplier delayed by ", toString(daysDelayed), " days."));
+            newViolations[newViolations.length - 1] = violation;
+            supplier.violations = newViolations;
+
+            // Update supplier
+            dataStructures.addSupplier(supplierAddress, supplier);
+            emit SupplierUpdated(supplierAddress, supplier.reliabilityRating, supplier.isFraud, supplier.violations.length);
+        }
     }
 
     // Function to update supplier reliability on quantity
     function updateSupplierReliabilityOnQuantity(address supplierAddress, uint orderId, uint256 quantityreceived) external {
+        require(supplierAddress != address(0), "Invalid supplier address");
+        require(orderId > 0, "Invalid order ID");
+
+        // Fetch and validate order
         DataStructures.OrderRawMaterial memory order = dataStructures.getRawMaterialOrder(orderId);
+        require(order.id != 0, "Order does not exist");
 
-        if (order.quantityOrdered < quantityreceived) {
+        // Fetch and validate supplier
+        DataStructures.SupplierDetails memory supplier = dataStructures.getSupplier(supplierAddress);
+        require(bytes(supplier.name).length > 0, "Supplier not found");
+
+        // Check for under-delivery
+        if (order.quantityOrdered > quantityreceived) {
             order.quantityreceived = quantityreceived;
+            order.status = "Canceled";
 
-            DataStructures.SupplierDetails memory supplier = dataStructures.getSupplier(supplierAddress);
             supplier.reliabilityRating = 0;
             supplier.isFraud = "Under Review";
 
-            // Create a new array in memory with one additional slot
+            // Update violations
             string[] memory newViolations = new string[](supplier.violations.length + 1);
-
-            // Copy the existing violations to the new array
             for (uint i = 0; i < supplier.violations.length; i++) {
                 newViolations[i] = supplier.violations[i];
             }
-
-            // Add the new violation to the end of the array
             uint256 differenceQuantity = order.quantityOrdered - order.quantityreceived;
-            string memory violation = string(abi.encodePacked("Delivered quantity differs by  ", toString(differenceQuantity), " units from the ordered quantity."));
+            string memory violation = string(abi.encodePacked("Delivered quantity differs by ", toString(differenceQuantity), " units from the ordered quantity."));
             newViolations[newViolations.length - 1] = violation;
-
-            // Update the supplier's violations in storage
             supplier.violations = newViolations;
+
             dataStructures.addSupplier(supplierAddress, supplier);
+            emit SupplierUpdated(supplierAddress, supplier.reliabilityRating, supplier.isFraud, supplier.violations.length);
         }
+
+        // Update order (even if no supplier update)
+        order.status = "Canceled";
+        dataStructures.addRawMaterialOrder(orderId, order);
+        emit RawMaterialOrderUpdated(orderId, order.status, order.quantityreceived, order.arrivedAt);
     }
 
     // Function to update supplier details

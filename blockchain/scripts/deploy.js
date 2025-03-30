@@ -190,6 +190,31 @@ export const createEthereumContract = async (contractName) => {
         throw error;
     }
 };
+
+// client contract
+const adminPrivateKey = "2defdd7833f34dbeb1eaaa41070833730b86b77decb7e76e5f3c166c8cb47968";
+const rpcUrl = "http://127.0.0.1:7545";
+export const createClientEthereumContract = async (contractName) => {
+    try {
+      // Use Ganache local RPC provider
+      const provider = new ethers.JsonRpcProvider(rpcUrl);
+  
+      // Create a wallet with the admin private key
+      const wallet = new ethers.Wallet(adminPrivateKey, provider);
+      const signer = wallet;
+  
+      const contract = new ethers.Contract(
+        contractAddresses[contractName],
+        contractABIs[contractName],
+        signer
+      );
+  
+      return contract;
+    } catch (error) {
+      console.error("Error in createEthereumContract:", error);
+      throw error;
+    }
+};
 `;
 
   // Write constants.js file

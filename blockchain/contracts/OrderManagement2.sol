@@ -166,34 +166,40 @@ contract OrderManagement2 {
 
     // ship client order
     event OrderDelivered(uint256 orderId, string clientName, uint256 timestamp);
-    function shipClientOrder(uint256 _clientOrderId) external onlyDistributor {
-        require(_clientOrderId > 0 && _clientOrderId <= dataStructures.getClientOrderCounter(), "Invalid Client Order ID");
 
-        // Fetch the client order from storage
+    function shipClientOrder(uint256 _clientOrderId) external onlyDistributor {
+
+        // Fetch client order from DataStructures
         DataStructures.ClientOrder memory clientOrder = dataStructures.getClientOrderById(_clientOrderId);
 
+        // Verify distributor ownership
+        DataStructures.Order memory order = dataStructures.getOrder(clientOrder.orderId);
+        require(order.id != 0, "Parent order does not exist");
+
+        // Check if already shipped
         require(clientOrder.shippedToClientAt == 0, "Already shipped");
 
+        // Update the client order in memory
         clientOrder.isShippedToClient = true;
         clientOrder.shippedToClientAt = block.timestamp;
 
-        // Save the updated client order back to storage
-        dataStructures.setClientOrderById(_clientOrderId, clientOrder);
+        // Pass the updated client order to DataStructures setter
+        dataStructures.updateClientOrder(_clientOrderId, clientOrder);
     }
 
     function clientConfirmDelivery(uint256 _clientOrderId) public {
-        require(_clientOrderId > 0 && _clientOrderId <= dataStructures.getClientOrderCounter(), "Invalid Client Order ID");
-
-        // Fetch the client order from storage
         DataStructures.ClientOrder memory clientOrder = dataStructures.getClientOrderById(_clientOrderId);
 
+        // Validation
+        require(_clientOrderId > 0 && _clientOrderId <= dataStructures.getClientOrderCounter(), "Invalid Client Order ID");
         require(!clientOrder.isArrivedToClient, "Already delivered");
 
+        // Update the client order in memory
         clientOrder.isArrivedToClient = true;
         clientOrder.deliveredToClientAt = block.timestamp;
 
-        // Save the updated client order back to storage
-        dataStructures.setClientOrderById(_clientOrderId, clientOrder);
+        // Pass the updated client order to DataStructures setter
+        dataStructures.updateClientOrder(_clientOrderId, clientOrder);
 
         emit OrderDelivered(clientOrder.orderId, clientOrder.clientName, block.timestamp);
     }

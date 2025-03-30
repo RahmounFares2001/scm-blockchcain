@@ -136,12 +136,24 @@ contract DataStructures {
         clientOrderById[_clientOrderId] = _clientOrder;
     }
 
+    function updateClientOrder(uint256 _clientOrderId, ClientOrder memory _clientOrder) external {
+        // Update clientOrderById
+        clientOrderById[_clientOrderId] = _clientOrder;
+
+        // Sync with clientOrders
+        ClientOrder[] storage clientOrdersArray = clientOrders[_clientOrder.orderId];
+        for (uint256 i = 0; i < clientOrdersArray.length; i++) {
+            if (clientOrdersArray[i].id == _clientOrderId) {
+                clientOrdersArray[i] = _clientOrder;
+                break;
+            }
+        }
+    }
+
     // update PriceUpdateTimestamp for each price modification
     function addPriceUpdateTimestamp(uint256 id, uint256 updateTimestamp) external {
         materials[id].priceUpdateTimestamps.push(updateTimestamp);
     }
-
-
 
     // State Variables
     uint256 public transactionCount;

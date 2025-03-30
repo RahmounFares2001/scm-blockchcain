@@ -1,4 +1,4 @@
-// SPFla-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.0;
 
 import "./DataStructures.sol";
@@ -10,12 +10,10 @@ contract Dashboard {
     UserManagement public userManagement; 
     HelperFunctions public helperFunctions; 
 
-    // Constructor
     constructor(address _dataStructuresAddress) {
         require(_dataStructuresAddress != address(0), "Invalid DataStructures address");
         dataStructures = DataStructures(_dataStructuresAddress);
     }
-
 
     function getUsersStatistics()
         public
@@ -30,7 +28,6 @@ contract Dashboard {
         manufacturerCount = 0;
         distributorCount = 0;
 
-        // Count registered suppliers
         address[] memory supplierAddresses = dataStructures.getSupplierAddresses();
         for (uint256 i = 0; i < supplierAddresses.length; i++) {
             if (dataStructures.getUser(supplierAddresses[i]).isRegistered && 
@@ -39,7 +36,6 @@ contract Dashboard {
             }
         }
 
-        // Count registered manufacturers
         address[] memory manufacturerAddresses = dataStructures.getManufacturerAddresses();
         for (uint256 i = 0; i < manufacturerAddresses.length; i++) {
             if (dataStructures.getUser(manufacturerAddresses[i]).isRegistered && 
@@ -48,7 +44,6 @@ contract Dashboard {
             }
         }
 
-        // Count registered distributors
         address[] memory distributorAddresses = dataStructures.getDistributorAddresses();
         for (uint256 i = 0; i < distributorAddresses.length; i++) {
             if (dataStructures.getUser(distributorAddresses[i]).isRegistered && 
@@ -60,7 +55,6 @@ contract Dashboard {
         return (supplierCount, manufacturerCount, distributorCount);
     }
 
-    // Get supplier statistics
     function getSupplierStatistics()
         public
         view
@@ -77,11 +71,7 @@ contract Dashboard {
         address[] memory supplierAddresses = dataStructures.getSupplierAddresses();
         for (uint256 i = 0; i < supplierAddresses.length; i++) {
             DataStructures.SupplierDetails memory supplier = dataStructures.getSupplier(supplierAddresses[i]);
-
-            // Skip deleted suppliers
-            if (supplier.isDeleted) {
-                continue;
-            }
+            if (supplier.isDeleted) continue;
 
             bytes32 fraudHash = keccak256(abi.encodePacked(supplier.isFraud));
             if (fraudHash == keccak256(abi.encodePacked("Fraud"))) {
@@ -96,7 +86,6 @@ contract Dashboard {
         return (fraudCount, reliableCount, underReviewCount);
     }
 
-    // Get order statistics
     function getOrdersStatistics()
         public
         view
@@ -116,28 +105,27 @@ contract Dashboard {
         shippedToClientCount = 0;
         deliveredToClientCount = 0;
 
-        uint256 orderCounter = dataStructures.getOrderCounter(); // Use counter instead of orderIds
+        uint256 orderCounter = dataStructures.getOrderCounter();
         for (uint256 i = 1; i <= orderCounter; i++) {
             DataStructures.Order memory order = dataStructures.getOrder(i);
 
-            bytes32 statusHash = keccak256(abi.encodePacked(order.orderStatus));
-            if (statusHash == keccak256(abi.encodePacked("Pending Production"))) {
+            // Use boolean flags instead of string status for precision
+            if (!order.isProduced) {
                 pendingProductionCount++;
-            } else if (statusHash == keccak256(abi.encodePacked("Manufactured"))) {
+            } else if (order.isProduced && !order.isShippedToDistributor) {
                 manufacturedCount++;
-            } else if (statusHash == keccak256(abi.encodePacked("Shipped to Distributor"))) {
+            } else if (order.isShippedToDistributor && !order.isArrivedToDistributor) {
                 shippedToDistributorCount++;
-            } else if (statusHash == keccak256(abi.encodePacked("Arrived to Distributor"))) {
+            } else if (order.isArrivedToDistributor) {
                 arrivedToDistributorCount++;
             }
 
-            // Count client orders
+            // Client orders
             DataStructures.ClientOrder[] memory clientOrdersForOrder = dataStructures.getClientOrders(i);
             for (uint256 j = 0; j < clientOrdersForOrder.length; j++) {
-                if (clientOrdersForOrder[j].isShippedToClient) {
+                if (clientOrdersForOrder[j].isShippedToClient && !clientOrdersForOrder[j].isArrivedToClient) {
                     shippedToClientCount++;
-                }
-                if (clientOrdersForOrder[j].isArrivedToClient) {
+                } else if (clientOrdersForOrder[j].isArrivedToClient) {
                     deliveredToClientCount++;
                 }
             }
@@ -153,38 +141,52 @@ contract Dashboard {
         );
     }
 
-    // Get material order statistics (corrected to use OrderRawMaterial)
     function getMaterialOrderStatistics()
         public
         view
         returns (
             uint256 pendingCount,
-            uint256 shippedCount, 
-            uint256 deliveredCount, 
+            uint256 shippedToManufacturerCount,
+            uint256 arrivedToManufacturerCount,
+            uint256 deliveredCount,
             uint256 canceledCount
         )
     {
         pendingCount = 0;
-        shippedCount = 0;
+        shippedToManufacturerCount = 0;
+        arrivedToManufacturerCount = 0;
         deliveredCount = 0;
         canceledCount = 0;
 
         uint256 orderRawMaterialCounter = dataStructures.getOrderRawMaterialCounter();
         for (uint256 i = 1; i <= orderRawMaterialCounter; i++) {
             DataStructures.OrderRawMaterial memory order = dataStructures.getRawMaterialOrder(i);
-
             bytes32 statusHash = keccak256(abi.encodePacked(order.status));
+
+            // Interpret status with timestamps for manufacturer stages
             if (statusHash == keccak256(abi.encodePacked("Pending"))) {
                 pendingCount++;
             } else if (statusHash == keccak256(abi.encodePacked("Shipped"))) {
-                shippedCount++;
+                if (order.shippedAt > 0 && order.arrivedAt == 0) {
+                    shippedToManufacturerCount++;
+                }
             } else if (statusHash == keccak256(abi.encodePacked("Delivered"))) {
-                deliveredCount++;
+                if (order.arrivedAt > 0 && order.quantityreceived >= order.quantityOrdered) {
+                    deliveredCount++;
+                } else if (order.arrivedAt > 0) {
+                    arrivedToManufacturerCount++; // Arrived but not fully delivered
+                }
             } else if (statusHash == keccak256(abi.encodePacked("Canceled"))) {
                 canceledCount++;
             }
         }
 
-        return (pendingCount, shippedCount, deliveredCount, canceledCount);
+        return (
+            pendingCount,
+            shippedToManufacturerCount,
+            arrivedToManufacturerCount,
+            deliveredCount,
+            canceledCount
+        );
     }
 }
