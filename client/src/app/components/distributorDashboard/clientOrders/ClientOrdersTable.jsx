@@ -12,20 +12,28 @@ import {
 } from "@/components/ui/table";
 import { useState } from "react";
 
-// components
+// Components
 import ClientOrderDetails from "./ClientOrderDetails";
 
-// hooks
+// Hooks
 import useGetDistributorClientOrders from "@/app/hooks/orders/useGetDistributorClientOrders";
+import ShipClientOrder from "./ShipClientOrder";
 
 export default function ClientOrdersTable() {
   const { orders, loading, error, fetchOrders } = useGetDistributorClientOrders();
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
+  const [showShipModal, setShowShipModal] = useState(false);
 
   const formatDate = (timestamp) => {
     if (!timestamp || timestamp === "0") return "N/A";
     return new Date(Number(timestamp) * 1000).toLocaleDateString();
+  };
+
+  const handleClose = () => {
+    setSelectedOrder(null);
+    setShowDetails(false);
+    setShowShipModal(false);
   };
 
   return (
@@ -58,33 +66,62 @@ export default function ClientOrdersTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {orders.map((order) => (
-              <TableRow key={order.clientOrder.id}>
-                <TableCell>{order.clientOrder.id}</TableCell>
-                <TableCell>{order.clientOrder.clientName}</TableCell>
-                <TableCell>{order.order.productName}</TableCell>
-                <TableCell>{order.clientOrder.clientProductQuantity}</TableCell>
-                <TableCell>{formatDate(order.clientOrder.shouldArriveToClientAt)}</TableCell>
-                <TableCell className={`${
-                  order.clientOrder.isArrivedToClient ? "text-green-700" :
-                  order.clientOrder.isShippedToClient ? "text-yellow-700" : "text-gray-700"
-                } font-bold`}>
-                  {order.clientOrder.isArrivedToClient ? "Delivered" : 
-                   order.clientOrder.isShippedToClient ? "Shipped" : "Pending"}
-                </TableCell>
-                <TableCell className="text-right" >
-                  <button
-                    onClick={() => {
-                      setSelectedOrder(order);
-                      setShowDetails(true);
-                    }}
-                    className="w-20 py-1 bg-yellow-700 rounded-lg hover:bg-yellowblue-600 text-white"
-                  >
-                    Details
-                  </button>
+            {orders.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center">
+                  No client orders available
                 </TableCell>
               </TableRow>
-            ))}
+            ) : (
+              orders.map((order) => (
+                <TableRow key={order.clientOrder.id}>
+                  <TableCell>{order.clientOrder.id}</TableCell>
+                  <TableCell>{order.clientOrder.clientName}</TableCell>
+                  <TableCell>{order.order.productName}</TableCell>
+                  <TableCell>{order.clientOrder.clientProductQuantity}</TableCell>
+                  <TableCell>{formatDate(order.clientOrder.shouldArriveToClientAt)}</TableCell>
+                  <TableCell
+                    className={`${
+                      order.clientOrder.isArrivedToClient
+                        ? "text-green-700"
+                        : order.clientOrder.isShippedToClient
+                        ? "text-orange-700"
+                        : "text-yellow-700"
+                    } font-bold`}
+                  >
+                    {order.clientOrder.isArrivedToClient
+                      ? "Delivered"
+                      : order.clientOrder.isShippedToClient
+                      ? "Shipped"
+                      : "Pending"}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex gap-1 justify-end">
+                      <button
+                        onClick={() => {
+                          setSelectedOrder(order);
+                          setShowDetails(true);
+                        }}
+                        className="w-20 py-1 bg-yellow-700 rounded-lg hover:bg-yellow-600 text-white"
+                      >
+                        Details
+                      </button>
+                      {!order.clientOrder.isShippedToClient && (
+                        <button
+                          onClick={() => {
+                            setSelectedOrder(order);
+                            setShowShipModal(true);
+                          }}
+                          className="w-20 py-1 bg-blue-700 rounded-lg hover:bg-blue-600 text-white"
+                        >
+                          Ship
+                        </button>
+                      )}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
           <TableFooter>
             <TableRow>
@@ -95,11 +132,21 @@ export default function ClientOrdersTable() {
       )}
 
       {showDetails && selectedOrder && (
-        <div className="fixed top-0 left-0 w-full h-full flex justify-center items-center">
-          <ClientOrderDetails data={selectedOrder} />
+        <div className="fixed top-0 left-0 w-full h-full flex justify-center items-center z-40">
+          <ClientOrderDetails data={selectedOrder} onClose={handleClose} />
           <div
             className="fixed top-0 left-0 w-full h-full bg-black/90 z-30"
-            onClick={() => setShowDetails(false)}
+            onClick={handleClose}
+          ></div>
+        </div>
+      )}
+
+      {showShipModal && selectedOrder && (
+        <div className="fixed top-0 left-0 w-full h-full flex justify-center items-center z-40">
+          <ShipClientOrder data={selectedOrder} onClose={handleClose} fetchOrders={fetchOrders} />
+          <div
+            className="fixed top-0 left-0 w-full h-full bg-black/90 z-30"
+            onClick={handleClose}
           ></div>
         </div>
       )}

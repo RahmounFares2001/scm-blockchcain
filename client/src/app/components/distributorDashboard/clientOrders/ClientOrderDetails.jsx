@@ -3,11 +3,11 @@
 import React from 'react';
 
 export default function ClientOrderDetails({ data }) {
+  
   const formatDate = (timestamp) => {
     if (!timestamp || timestamp === "0") return "N/A";
     return new Date(Number(timestamp) * 1000).toLocaleString();
   };
-
   if (!data || typeof data !== 'object') {
     return <div>No order data available</div>;
   }

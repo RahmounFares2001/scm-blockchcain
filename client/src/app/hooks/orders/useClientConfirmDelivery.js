@@ -1,7 +1,7 @@
 "use client";
 
+import { createClientEthereumContract } from "@/app/utils/constants";
 import { useState } from "react";
-import { createEthereumContract } from "@/app/utils/constants";
 
 export default function useClientConfirmDelivery() {
   const [loading, setLoading] = useState(false);
@@ -19,7 +19,7 @@ export default function useClientConfirmDelivery() {
       setError(null);
       setSuccess(false);
 
-      const contract = await createEthereumContract("OrderManagement2");
+      const contract = await createClientEthereumContract("OrderManagement2");
       if (!contract) {
         setError("Error connecting to the contract");
         return;

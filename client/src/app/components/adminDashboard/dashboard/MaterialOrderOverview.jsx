@@ -23,8 +23,7 @@ export default function MaterialOrderOverview() {
   } = useGetMaterialOrderStatistics();
 
   // total orders
-  const totalOrders =
-    pendingCount +
+  const totalOrders = pendingCount +
     shippedToManufacturerCount +
     arrivedToManufacturerCount +
     canceledCount;

@@ -26,15 +26,20 @@ export default function useGetAllSuppliers() {
 
       const data = await contract.getAllSuppliers();
 
-      const formattedSuppliers = data[0].map((address, index) => ({
-        address,
-        name: data[1][index],
-        reliabilityRating: data[2][index].toString(),
-        fraudStatus: data[3][index],
-        place: data[4][index],
-        email: data[5][index],
-        violations: data[6][index],
-      }));
+      const formattedSuppliers = data[0].map((address, index) => {
+        const ratingInTenths = Number(data[2][index]);
+        const formattedRating = (ratingInTenths / 10).toFixed(1);
+
+        return {
+          address,
+          name: data[1][index],
+          reliabilityRating: formattedRating, // "5.0", "4.8", etc.
+          fraudStatus: data[3][index],
+          place: data[4][index],
+          email: data[5][index],
+          violations: data[6][index],
+        };
+      });
 
       setSuppliers(formattedSuppliers);
     } catch (err) {

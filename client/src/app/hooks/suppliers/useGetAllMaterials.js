@@ -44,9 +44,12 @@ export default function useGetAllMaterials() {
           isDeleted: item.material[12],
         };
 
+        const ratingInTenths = Number(item.supplier[1]);
+        const formattedRating = (ratingInTenths / 10).toFixed(1);
+
         const supplier = {
           name: item.supplier[0],
-          reliabilityRating: Number(item.supplier[1]),
+          reliabilityRating: formattedRating,
           isFraud: item.supplier[2],
           place: item.supplier[3],
           emailAddress: item.supplier[4],

@@ -26,10 +26,15 @@ export default function useGetSupplierByAddress() {
 
       const data = await contract.getSupplierByAddress(supplierAddress);
 
+      
+
+      const ratingInTenths = data.reliabilityRating;
+      const formattedRating = (ratingInTenths / 10).toFixed(1);
+
       const formattedSupplier = {
         address: supplierAddress,
         name: data.name,
-        reliabilityRating: data.reliabilityRating.toString(),
+        reliabilityRating: data.formattedRating.toString(),
         fraudStatus: data.isFraud,
         place: data.place,
         email: data.emailAddress,

@@ -50,7 +50,7 @@ export default function useGetAllSupplierMaterialOrders() {
             }
           }
         }
-
+        Number(item.supplier[1])
         const rawManufacturers = await userContract.getAllManufacturers();
         if (rawManufacturers) {
           for (let i = 0; i < rawManufacturers.length; i++) {

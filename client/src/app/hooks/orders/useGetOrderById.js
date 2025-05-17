@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { createEthereumContract } from "@/app/utils/constants";
+import { createClientEthereumContract } from "@/app/utils/constants";
 
 export default function useGetOrderById() {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const fetchOrder = async (orderId) => {
+  const fetchClientOrder = async (orderId) => {
     try {
       if (!window.ethereum) {
         throw new Error("Please install MetaMask!");
@@ -21,13 +21,13 @@ export default function useGetOrderById() {
       setLoading(true);
       setError(null);
 
-      const contract = await createEthereumContract("OrderManagement");
+      const contract = await createClientEthereumContract("OrderManagement");
       if (!contract) {
         throw new Error("Error connecting to the contract");
       }
 
       const data = await contract.getOrderByOrderId(orderId);
-
+      console.log(data)
       // Check if data is valid
       if (!data || typeof data !== "object") {
         throw new Error("Order not found or invalid data returned.");
@@ -71,5 +71,5 @@ export default function useGetOrderById() {
     setLoading(false);
   };
 
-  return { order, loading, error, fetchOrder, reset };
+  return { order, loading, error, fetchClientOrder, reset };
 }

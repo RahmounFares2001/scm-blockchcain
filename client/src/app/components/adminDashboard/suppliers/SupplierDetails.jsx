@@ -30,9 +30,9 @@ export default function SupplierDetails({ data: clickedData }) {
             </span>
           </p>
           <ul className="list-disc pl-5">
-            {Object.entries(supplier.violations).map(([key, value]) => (
+            {Object.entries(supplier.violations).map(([key, value], index) => (
               <li key={key}>
-                <strong>{key}:</strong> {value}
+                <strong>{index+1} :</strong> {value}
               </li>
             ))}
           </ul>
