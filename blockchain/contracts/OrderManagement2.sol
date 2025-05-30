@@ -303,6 +303,11 @@ contract OrderManagement2 {
     }
     // create hash from order details
     function createProductHash(uint256 quantity, uint256 producedAt, uint256 shippedAt) internal pure returns (uint256) {
-        return uint256(keccak256(abi.encodePacked(quantity, producedAt, shippedAt)));
+        return uint256(
+            keccak256(abi.encodePacked(
+                quantity,
+                producedAt,
+                shippedAt
+            )));
     }
 }

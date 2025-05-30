@@ -43,7 +43,7 @@ contract UserManagement {
         dataStructures.addUser(_supplierAddress, DataStructures.Role.SUPPLIER, true);
         dataStructures.addSupplier(_supplierAddress, DataStructures.SupplierDetails({
             name: "supplier1",
-            reliabilityRating: 5,
+            reliabilityRating: 50,
             isFraud: "Reliable",
             place: "Setif",
             emailAddress: "supplier1@gmail.com",

@@ -19,12 +19,14 @@ import useGetAllSupplierMaterialOrders from "@/app/hooks/suppliers/useGetAllSupp
 // Components
 import MaterialOrderDetails from "./MaterialOrderDetails";
 import ShipMaterial from "./ShipMaterial";
+import useGetManufacturerByAddress from "@/app/hooks/manufacturers/useGetManufacturerByAddress";
 
 export function MaterialOrdersTable() {
   const { orders, loading, error, fetchOrders } = useGetAllSupplierMaterialOrders();
   const [clickedData, setClickedData] = useState(null);
   const [showOrderDetails, setShowOrderDetails] = useState(false);
   const [showShipMaterial, setShowShipMaterial] = useState(false);
+
 
   // Handle click for Details button
   const handleOrderClick = (order) => {

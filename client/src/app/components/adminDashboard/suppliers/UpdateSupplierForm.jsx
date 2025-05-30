@@ -19,7 +19,7 @@ export default function UpdateSupplierForm({ data: clickedData }) {
     name: Yup.string(),
     reliabilityRating: Yup.number()
       .min(1, "Minimum rating is 1")
-      .max(5, "Maximum rating is 5"),
+      .max(50, "Maximum rating is 50"),
     isFraud: Yup.string(),
     place: Yup.string(),
     emailAddress: Yup.string()
@@ -124,7 +124,7 @@ export default function UpdateSupplierForm({ data: clickedData }) {
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
             min="1"
-            max="5"
+            max="50"  
             placeholder="Enter Reliability Rating"
             className="border border-gray-300 px-3 py-2 rounded-lg"
           />

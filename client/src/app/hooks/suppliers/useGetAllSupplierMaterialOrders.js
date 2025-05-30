@@ -32,7 +32,6 @@ export default function useGetAllSupplierMaterialOrders() {
 
       // Fetch supplier-specific raw material orders
       const ordersData = await contract.getAllSupplierMaterialOrders();
-      console.log(ordersData);
       const supplierMap = {};
       const manufacturerMap = {};
 
@@ -50,14 +49,18 @@ export default function useGetAllSupplierMaterialOrders() {
             }
           }
         }
-        Number(item.supplier[1])
+
+        // Number(item.supplier[1])
         const rawManufacturers = await userContract.getAllManufacturers();
+        console.log("222", rawManufacturers)
+
         if (rawManufacturers) {
           for (let i = 0; i < rawManufacturers.length; i++) {
             try {
               const manufacturer = rawManufacturers[i];
               const address = manufacturer[0]; 
               manufacturerMap[address] = `Manufacturer ${i + 1}`;
+              console.log("hna", manufacturer)
             } catch (err) {
               console.error("Error processing manufacturer:", err);
             }

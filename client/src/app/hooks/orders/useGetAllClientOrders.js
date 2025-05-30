@@ -25,36 +25,35 @@ export default function useGetAllClientOrders() {
       }
 
       const data = await contract.getAllClientOrders();
+      console.log("data", data);
 
-      const formattedClientOrders = data.map((item) => ({
+      const formattedClientOrders = data.map(([clientOrder, order]) => ({
         clientOrder: {
-          id: item.clientOrder.id.toString(),
-          orderId: item.clientOrder.orderId.toString(),
-          clientName: item.clientOrder.clientName,
-          clientAddress: item.clientOrder.clientAddress,
-          clientProductQuantity: item.clientOrder.clientProductQuantity.toString(),
-          shouldArriveToClientAt: item.clientOrder.shouldArriveToClientAt.toString(),
-          isShippedToClient: item.clientOrder.isShippedToClient,
-          shippedToClientAt: item.clientOrder.shippedToClientAt.toString(),
-          isArrivedToClient: item.clientOrder.isArrivedToClient,
-          deliveredToClientAt: item.clientOrder.deliveredToClientAt.toString(),
+          id: clientOrder[0].toString(), 
+          orderId: clientOrder[1].toString(),
+          clientName: clientOrder[2], 
+          clientAddress: clientOrder[3], 
+          clientProductQuantity: clientOrder[4].toString(), 
+          shouldArriveToClientAt: clientOrder[5].toString(),
+          isShippedToClient: clientOrder[6], 
+          shippedToClientAt: clientOrder[7].toString(), 
+          isArrivedToClient: clientOrder[8], 
+          deliveredToClientAt: clientOrder[9].toString(),
         },
         order: {
-          id: item.order.id.toString(),
-          manufacturerAddress: item.order.manufacturerAddress,
-          manufacturerName: item.order.manufacturerName,
-          isProduced: item.order.isProduced,
-          producedAt: item.order.producedAt.toString(),
-          isShippedToDistributor: item.order.isShippedToDistributor,
-          shippedToDistributorAt: item.order.shippedToDistributorAt.toString(),
-          distributorAddress: item.order.distributorAddress,
-          distributorName: item.order.distributorName,
-          isArrivedToDistributor: item.order.isArrivedToDistributor,
-          arrivedToDistributorAt: item.order.arrivedToDistributorAt.toString(),
-          productName: item.order.productName,
-          productQuantity: item.order.productQuantity.toString(),
-          orderStatus: item.order.orderStatus,
-          createdAt: item.order.createdAt.toString(),
+          id: order[0].toString(), 
+          manufacturerAddress: order[1],
+          isProduced: order[2], 
+          producedAt: order[3].toString(), 
+          isShippedToDistributor: order[4], 
+          shippedToDistributorAt: order[5].toString(), 
+          distributorAddress: order[6], 
+          isArrivedToDistributor: order[7], 
+          arrivedToDistributorAt: order[8].toString(),
+          productName: order[9], 
+          productQuantity: order[10].toString(), 
+          orderStatus: order[12],
+          createdAt: order[11].toString(), 
         },
       }));
 

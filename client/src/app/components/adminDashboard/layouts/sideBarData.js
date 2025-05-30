@@ -10,6 +10,8 @@ import { PiRoadHorizonBold } from "react-icons/pi";
 
 import { IoMdAdd } from "react-icons/io";
 import { CgPlayListAdd } from "react-icons/cg";
+import { FaUsers } from "react-icons/fa";
+
 import { BiCartAdd } from "react-icons/bi";
 
 
@@ -94,6 +96,14 @@ const sideBarData = [
     {
       id: 8,
       title: "ORDERS",
+      name: "Material Orders",
+      activeName: "materialOrders",
+      icon: <LiaTruckLoadingSolid />,
+      href: '/adminDashboard/materialOrders'
+    },
+    {
+      id: 9,
+      title: undefined,
       name: "Product orders",
       activeName: "productOrders",
       icon: <TbPrismPlus />,
@@ -101,7 +111,7 @@ const sideBarData = [
     },
     ,
     {
-      id: 9,
+      id: 10,
       title: undefined,
       name: "Add order",
       activeName: "addOrder",
@@ -109,15 +119,15 @@ const sideBarData = [
       href: '/adminDashboard/addOrder'
     },
     {
-      id: 10,
+      id: 11,
       title: undefined,
-      name: "Material Orders",
-      activeName: "materialOrders",
-      icon: <LiaTruckLoadingSolid />,
-      href: '/adminDashboard/materialOrders'
+      name: "Client Orders",
+      activeName: "clientOrders",
+      icon: <FaUsers />,
+      href: '/adminDashboard/clientOrders'
     },
     {
-      id: 11,
+      id: 12,
       title: "TRACABLITY",
       name: "Track Product",
       activeName: "trackProduct",

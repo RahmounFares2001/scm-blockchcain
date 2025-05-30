@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createEthereumContract } from "@/app/utils/constants";
 
-export default function useGetSupplierByAddress() {
+export default function useGetSupplierByAddress(supplierAddress) {
   const [supplier, setSupplier] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -14,33 +14,31 @@ export default function useGetSupplierByAddress() {
         alert("Please install MetaMask!");
         return;
       }
-
+  
       setLoading(true);
       setError(null);
-
+  
       const contract = await createEthereumContract("UserManagement");
       if (!contract) {
         setError("Error connecting to the contract");
         return;
       }
-
+  
       const data = await contract.getSupplierByAddress(supplierAddress);
-
-      
-
-      const ratingInTenths = data.reliabilityRating;
+  
+      const ratingInTenths = Number(data.reliabilityRating);
       const formattedRating = (ratingInTenths / 10).toFixed(1);
-
+  
       const formattedSupplier = {
         address: supplierAddress,
         name: data.name,
-        reliabilityRating: data.formattedRating.toString(),
+        reliabilityRating: formattedRating, 
         fraudStatus: data.isFraud,
         place: data.place,
         email: data.emailAddress,
-        violations: data.violations,
+        violations: Number(data.violations), 
       };
-
+  
       setSupplier(formattedSupplier);
     } catch (err) {
       console.error("Error fetching supplier:", err);
@@ -50,5 +48,11 @@ export default function useGetSupplierByAddress() {
     }
   };
 
-  return { supplier, loading, error, fetchSupplier };
+  useEffect(() => {
+    if (supplierAddress) {
+      fetchSupplier(supplierAddress);
+    }
+  }, [supplierAddress]);
+
+  return { supplier, loading, error, refetch: fetchSupplier };
 }

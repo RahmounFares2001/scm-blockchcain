@@ -222,12 +222,10 @@ contract SupplierManagement2 {
                 }
             }
         }
-        
         // check if new price is higher
         if (foundMaterial && _newPrice > highestPrice) {
             return false;
         }
-        
         return true;
     }
 
@@ -242,7 +240,6 @@ contract SupplierManagement2 {
                 updateCount++;
             }
         }
-
         return updateCount > 1;
     }   
 }

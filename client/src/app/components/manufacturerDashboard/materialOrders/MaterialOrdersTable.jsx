@@ -26,6 +26,7 @@ export function MaterialOrdersTable() {
   const [showOrderDetails, setShowOrderDetails] = useState(false);
   const [showAction, setShowAction] = useState(false);
 
+  console.log(orders)
   // Handle click for Details button
   const handleOrderClick = (order) => {
     setClickedData(order);

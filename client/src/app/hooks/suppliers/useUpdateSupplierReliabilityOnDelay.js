@@ -29,7 +29,6 @@ export default function useUpdateSupplierReliabilityOnDelay() {
       await tx.wait();
 
       setSuccess(true);
-      alert("Supplier reliability updated successfully!");
     } catch (err) {
       console.error("Error updating supplier reliability:", err);
       setError("Failed to update supplier reliability.");

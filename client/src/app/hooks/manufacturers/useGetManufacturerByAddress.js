@@ -1,14 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createEthereumContract } from "@/app/utils/constants";
 
-export default function useGetManufacturerByAddress() {
+export default function useGetManufacturerByAddress(manufacturerAddress) {
   const [manufacturer, setManufacturer] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  console.log("data");
 
-  const fetchManufacturer = async (manufacturerAddress) => {
+  const fetchManufacturer = async (address) => {
     try {
       if (!window.ethereum) {
         alert("Please install MetaMask!");
@@ -24,8 +25,16 @@ export default function useGetManufacturerByAddress() {
         return;
       }
 
-      const manufacturerDetails = await contract.getManufacturerByAddress(manufacturerAddress);
-      setManufacturer(manufacturerDetails);
+      const data = await contract.getManufacturerByAddress(address);
+      // Convert BigInt values to numbers/strings
+      const formattedManufacturer = {
+        address: address,
+        name: data.name,
+        place: data.place,
+        email: data.email,
+      };
+
+      setManufacturer(formattedManufacturer);
     } catch (err) {
       console.error("Error fetching manufacturer:", err);
       setError("Failed to fetch manufacturer.");
@@ -33,6 +42,13 @@ export default function useGetManufacturerByAddress() {
       setLoading(false);
     }
   };
+
+  // Auto-fetch when manufacturerAddress changes
+  useEffect(() => {
+    if (manufacturerAddress) {
+      fetchManufacturer(manufacturerAddress);
+    }
+  }, [manufacturerAddress]);
 
   return { manufacturer, loading, error, fetchManufacturer };
 }

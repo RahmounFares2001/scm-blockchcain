@@ -24,7 +24,7 @@ export default function ClientOrdersTable() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
   const [showShipModal, setShowShipModal] = useState(false);
-
+  console.log(orders)
   const formatDate = (timestamp) => {
     if (!timestamp || timestamp === "0") return "N/A";
     return new Date(Number(timestamp) * 1000).toLocaleDateString();

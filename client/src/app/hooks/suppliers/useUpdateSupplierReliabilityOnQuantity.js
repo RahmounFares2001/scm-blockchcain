@@ -29,7 +29,6 @@ export default function useUpdateSupplierReliabilityOnQuantity() {
       await tx.wait();
 
       setSuccess(true);
-      alert("Supplier reliability updated based on quantity received!");
     } catch (err) {
       console.error("Error updating supplier reliability on quantity:", err);
       setError("Failed to update supplier reliability on quantity.");

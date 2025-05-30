@@ -5,6 +5,9 @@ import ConfirmReception from "./ConfirmReception";
 import ReportProblem from "./ReportProblem"; // Import the new component
 
 export default function Action({ data, onClose }) {
+
+
+
   const [action, setAction] = useState("");
 
   return (

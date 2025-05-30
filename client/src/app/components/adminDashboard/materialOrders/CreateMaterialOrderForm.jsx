@@ -69,7 +69,7 @@ export default function CreateRawMaterialOrderForm({ data: clickedData }) {
 
   return (
     <div className='flex flex-col justify-center items-center gap-5 w-1/2
-             z-50 bg-white rounded-lg h-4/5'>
+             z-50 bg-white rounded-lg h-5/6'>
       <form
         autoComplete='off'
         onSubmit={formik.handleSubmit}

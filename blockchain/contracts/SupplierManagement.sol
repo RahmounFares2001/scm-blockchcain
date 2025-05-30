@@ -92,7 +92,7 @@ contract SupplierManagement {
         }
         uint256 daysDelayed = delay / 1 days;
 
-        if (daysDelayed > 0) {
+        if (daysDelayed > 0) { 
             // Penalty: 5 per day 
             uint256 penaltyInTenths = daysDelayed * 4; 
 
@@ -187,6 +187,7 @@ contract SupplierManagement {
     event PriceUpdateConfirmed(uint256 indexed materialId, bool approved);
     event SupplierFraudStatusUpdated(address indexed supplier, bool isFraud, uint256 newReliabilityRating);
     event MaterialAdded(uint256 indexed id, address indexed supplier);
+    
     // Function to confirm new raw material price
     function confirmNewRawMaterialPrice(uint256 _id, bool _approve) public onlyAdmin {
         require(_id > 0 && _id <= dataStructures.getMaterialIdCounter(), "Invalid material ID");
@@ -261,6 +262,8 @@ contract SupplierManagement {
 
         return newMaterialId;
     }
+
+    
     // Helper function to convert uint to string
     function toString(uint256 value) internal pure returns (string memory) {
         if (value == 0) {

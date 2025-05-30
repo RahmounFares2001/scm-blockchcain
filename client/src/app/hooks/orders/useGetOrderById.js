@@ -8,7 +8,7 @@ export default function useGetOrderById() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const fetchClientOrder = async (orderId) => {
+  const fetchOrder = async (orderId) => {
     try {
       if (!window.ethereum) {
         throw new Error("Please install MetaMask!");
@@ -17,7 +17,6 @@ export default function useGetOrderById() {
       if (!orderId || isNaN(orderId) || orderId <= 0) {
         throw new Error("Invalid Order ID provided.");
       }
-
       setLoading(true);
       setError(null);
 
@@ -27,7 +26,6 @@ export default function useGetOrderById() {
       }
 
       const data = await contract.getOrderByOrderId(orderId);
-      console.log(data)
       // Check if data is valid
       if (!data || typeof data !== "object") {
         throw new Error("Order not found or invalid data returned.");
@@ -37,17 +35,18 @@ export default function useGetOrderById() {
       const formattedOrder = {
         id: data.id ? data.id.toString() : "N/A",
         manufacturerAddress: data.manufacturerAddress || "Unknown",
-        manufacturerName: data.manufacturerName || "Unknown",
+        // manufacturerName: data.manufacturerName || "Unknown",
         isProduced: data.isProduced || false,
         producedAt: data.producedAt ? data.producedAt.toString() : "0",
         isShippedToDistributor: data.isShippedToDistributor || false,
         shippedToDistributorAt: data.shippedToDistributorAt ? data.shippedToDistributorAt.toString() : "0",
         distributorAddress: data.distributorAddress || "Unknown",
-        distributorName: data.distributorName || "Unknown",
+        // distributorName: data.distributorName || "Unknown",
         isArrivedToDistributor: data.isArrivedToDistributor || false,
         arrivedToDistributorAt: data.arrivedToDistributorAt ? data.arrivedToDistributorAt.toString() : "0",
         productName: data.productName || "Unknown",
         productQuantity: data.productQuantity ? data.productQuantity.toString() : "0",
+        productHash: data.productHash ? data.productHash.toString() : "0",
         orderStatus: data.orderStatus || "Unknown",
         createdAt: data.createdAt ? data.createdAt.toString() : "0",
       };
@@ -71,5 +70,5 @@ export default function useGetOrderById() {
     setLoading(false);
   };
 
-  return { order, loading, error, fetchClientOrder, reset };
+  return { order, loading, error, fetchOrder, reset };
 }
