@@ -27,35 +27,66 @@ export default function useGetAllClientOrders() {
       const data = await contract.getAllClientOrders();
       console.log("data", data);
 
-      const formattedClientOrders = data.map(([clientOrder, order]) => ({
-        clientOrder: {
-          id: clientOrder[0].toString(), 
-          orderId: clientOrder[1].toString(),
-          clientName: clientOrder[2], 
-          clientAddress: clientOrder[3], 
-          clientProductQuantity: clientOrder[4].toString(), 
-          shouldArriveToClientAt: clientOrder[5].toString(),
-          isShippedToClient: clientOrder[6], 
-          shippedToClientAt: clientOrder[7].toString(), 
-          isArrivedToClient: clientOrder[8], 
-          deliveredToClientAt: clientOrder[9].toString(),
-        },
-        order: {
-          id: order[0].toString(), 
-          manufacturerAddress: order[1],
-          isProduced: order[2], 
-          producedAt: order[3].toString(), 
-          isShippedToDistributor: order[4], 
-          shippedToDistributorAt: order[5].toString(), 
-          distributorAddress: order[6], 
-          isArrivedToDistributor: order[7], 
-          arrivedToDistributorAt: order[8].toString(),
-          productName: order[9], 
-          productQuantity: order[10].toString(), 
-          orderStatus: order[12],
-          createdAt: order[11].toString(), 
-        },
-      }));
+      const formattedClientOrders = await Promise.all(
+        data.map(async ([clientOrder, order]) => {
+          let manufacturerName = "N/A";
+          let distributorName = "N/A";
+
+          // Fetch manufacturer name
+          try {
+            const contractUser = await createEthereumContract("UserManagement");
+            if (contractUser) {
+              const manufacturerData = await contractUser.getManufacturerByAddress(order[1]);
+              manufacturerName = manufacturerData.name || "N/A";
+            }
+          } catch (err) {
+            console.error(`Error fetching manufacturer for address ${order[1]}:`, err);
+          }
+
+          // Fetch distributor name
+          try {
+            const contractUser = await createEthereumContract("UserManagement");
+            if (contractUser) {
+              const distributorData = await contractUser.getDistributorByAddress(order[6]);
+              distributorName = distributorData.name || "N/A";
+            }
+          } catch (err) {
+            console.error(`Error fetching distributor for address ${order[6]}:`, err);
+          }
+
+          return {
+            clientOrder: {
+              id: clientOrder[0].toString(),
+              orderId: clientOrder[1].toString(),
+              clientName: clientOrder[2],
+              clientAddress: clientOrder[3],
+              clientProductQuantity: clientOrder[4].toString(),
+              shouldArriveToClientAt: clientOrder[5].toString(),
+              isShippedToClient: clientOrder[6],
+              shippedToClientAt: clientOrder[7].toString(),
+              isArrivedToClient: clientOrder[8],
+              deliveredToClientAt: clientOrder[9].toString(),
+            },
+            order: {
+              id: order[0].toString(),
+              manufacturerAddress: order[1],
+              manufacturerName,
+              isProduced: order[2],
+              producedAt: order[3].toString(),
+              isShippedToDistributor: order[4],
+              shippedToDistributorAt: order[5].toString(),
+              distributorAddress: order[6],
+              distributorName,
+              isArrivedToDistributor: order[7],
+              arrivedToDistributorAt: order[8].toString(),
+              productName: order[9],
+              productQuantity: order[10].toString(),
+              productHash: order[11].toString(),
+              status: order[12].toString(),
+            },
+          };
+        })
+      );
 
       setClientOrders(formattedClientOrders);
     } catch (err) {

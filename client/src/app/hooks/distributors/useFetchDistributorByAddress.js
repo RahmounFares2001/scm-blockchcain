@@ -5,8 +5,8 @@ import { createEthereumContract } from "@/app/utils/constants";
 
 export default function useFetchDistributorByAddress() {
   const [distributor, setDistributor] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [loading2, setLoading] = useState(false);
+  const [error2, setError] = useState(null);
 
   const fetchDistributorByAddress = async (distributorAddress) => {
     try {
@@ -41,5 +41,5 @@ export default function useFetchDistributorByAddress() {
     }
   };
 
-  return { fetchDistributorByAddress, distributor, loading, error };
+  return { fetchDistributorByAddress, distributor, loading2, error2 };
 }

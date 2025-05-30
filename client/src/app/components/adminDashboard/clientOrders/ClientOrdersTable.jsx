@@ -15,20 +15,41 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"; // Ensure all required components are imported
+} from "@/components/ui/table";
 import { useState } from "react";
 
 // Assuming ClientOrdersDetails is a component you'll create
-import ClientOrdersDetails from "./ClientOrdersDetails"; // Adjust path as needed
+import ClientOrdersDetails from "./ClientOrdersDetails";
 
 export function ClientOrdersTable() {
   // Get client orders from hook
   const { clientOrders, loading, error, refreshClientOrders } = useGetAllClientOrders();
   const [clickedData, setClickedData] = useState(null);
+  console.log(clickedData);
+    
 
   // Handle closing the details modal
   const handleClose = () => {
     setClickedData(null);
+  };
+
+  // Function to determine the combined status
+  const getCombinedStatus = (clientOrder) => {
+    const { order, clientOrder: co } = clientOrder;
+    
+    // Derive client order status
+    if (co.isArrivedToClient && co.deliveredToClientAt !== "0") {
+      return "Delivered to Client";
+    }
+    if (co.isShippedToClient && co.shippedToClientAt !== "0") {
+      return "Shipped to Client";
+    }
+    if (order.status === "Arrived to Distributor") {
+      return "Pending Shipment to Client";
+    }
+    
+    // Fall back to order status
+    return order.status;
   };
 
   return (
@@ -69,39 +90,48 @@ export function ClientOrdersTable() {
                 </TableCell>
               </TableRow>
             ) : (
-              clientOrders.map((clientOrder) => (
-                <TableRow key={clientOrder.clientOrder.id}>
-                  <TableCell className="font-medium">{clientOrder.clientOrder.id}</TableCell>
-                  <TableCell>{clientOrder.order.productName}</TableCell>
-                  <TableCell>{clientOrder.clientOrder.clientProductQuantity}</TableCell>
-                  <TableCell>{clientOrder.clientOrder.clientName}</TableCell>
-                  <TableCell>{clientOrder.order.manufacturerName}</TableCell>
-                  <TableCell>{clientOrder.order.distributorName}</TableCell>
-                  <TableCell
-                    className={`${
-                      clientOrder.order.orderStatus === "Pending Production"
-                        ? "text-yellow-700"
-                        : clientOrder.order.orderStatus === "Manufactured"
-                        ? "text-blue-700"
-                        : clientOrder.order.orderStatus === "Shipped to Distributor"
-                        ? "text-purple-700"
-                        : clientOrder.order.orderStatus === "Arrived to Distributor"
-                        ? "text-green-700"
-                        : "text-red-700"
-                    } font-bold`}
-                  >
-                    {clientOrder.order.orderStatus}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <button
-                      onClick={() => setClickedData(clientOrder)}
-                      className="w-20 py-1 bg-yellow-700 rounded-lg hover:bg-yellow-600 text-white"
+              clientOrders.map((clientOrder) => {
+                const status = getCombinedStatus(clientOrder);
+                return (
+                  <TableRow key={clientOrder.clientOrder.id}>
+                    <TableCell className="font-medium">{clientOrder.clientOrder.id}</TableCell>
+                    <TableCell>{clientOrder.order.productName}</TableCell>
+                    <TableCell>{clientOrder.clientOrder.clientProductQuantity}</TableCell>
+                    <TableCell>{clientOrder.clientOrder.clientName}</TableCell>
+                    <TableCell>{clientOrder.order.manufacturerName || "N/A"}</TableCell>
+                    <TableCell>{clientOrder.order.distributorName || "N/A"}</TableCell>
+                    <TableCell
+                      className={`${
+                        status === "Pending Production"
+                          ? "text-yellow-700"
+                          : status === "Manufactured"
+                          ? "text-blue-700"
+                          : status === "Shipped to Distributor"
+                          ? "text-purple-700"
+                          : status === "Arrived to Distributor"
+                          ? "text-green-700"
+                          : status === "Pending Shipment to Client"
+                          ? "text-orange-700"
+                          : status === "Shipped to Client"
+                          ? "text-indigo-700"
+                          : status === "Delivered to Client"
+                          ? "text-teal-700"
+                          : "text-red-700"
+                      } font-bold`}
                     >
-                      Details
-                    </button>
-                  </TableCell>
-                </TableRow>
-              ))
+                      {status}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <button
+                        onClick={() => setClickedData(clientOrder)}
+                        className="w-20 py-1 bg-yellow-700 rounded-lg hover:bg-yellow-600 text-white"
+                      >
+                        Details
+                      </button>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
           <TableFooter>
