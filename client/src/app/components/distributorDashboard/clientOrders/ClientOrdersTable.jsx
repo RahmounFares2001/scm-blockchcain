@@ -24,7 +24,15 @@ export default function ClientOrdersTable() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
   const [showShipModal, setShowShipModal] = useState(false);
-  console.log(orders)
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  // Pagination calculations
+  const totalPages = Math.ceil(orders.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedOrders = orders.slice(startIndex, endIndex);
+
   const formatDate = (timestamp) => {
     if (!timestamp || timestamp === "0") return "N/A";
     return new Date(Number(timestamp) * 1000).toLocaleDateString();
@@ -34,6 +42,19 @@ export default function ClientOrdersTable() {
     setSelectedOrder(null);
     setShowDetails(false);
     setShowShipModal(false);
+  };
+
+  // Handle pagination navigation
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
   };
 
   return (
@@ -66,14 +87,14 @@ export default function ClientOrdersTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {orders.length === 0 ? (
+            {paginatedOrders.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="text-center">
                   No client orders available
                 </TableCell>
               </TableRow>
             ) : (
-              orders.map((order) => (
+              paginatedOrders.map((order) => (
                 <TableRow key={order.clientOrder.id}>
                   <TableCell>{order.clientOrder.id}</TableCell>
                   <TableCell>{order.clientOrder.clientName}</TableCell>
@@ -125,7 +146,27 @@ export default function ClientOrdersTable() {
           </TableBody>
           <TableFooter>
             <TableRow>
-              <TableCell colSpan={7}>Page 1/1</TableCell>
+              <TableCell colSpan={5}>
+                Page {currentPage}/{totalPages}
+              </TableCell>
+              <TableCell colSpan={2} className="text-right">
+                <div className="flex gap-5 justify-end items-center">
+                  <button
+                    className="w-24 py-1 border hover:bg-gray-200 rounded-md disabled:opacity-50"
+                    onClick={handlePreviousPage}
+                    disabled={currentPage === 1}
+                  >
+                    Previous
+                  </button>
+                  <button
+                    className="w-24 py-1 border hover:bg-gray-200 rounded-md disabled:opacity-50"
+                    onClick={handleNextPage}
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                  </button>
+                </div>
+              </TableCell>
             </TableRow>
           </TableFooter>
         </Table>

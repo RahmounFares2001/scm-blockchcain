@@ -19,10 +19,16 @@ import useGetAllMaterialOrders from "@/app/hooks/suppliers/useGetAllMaterialOrde
 import MaterialOrderDetails from "./MaterialOrderDetails";
 
 export function MaterialOrdersTable() {
-    // get material orders
     const { orders, loading, error, fetchOrders } = useGetAllMaterialOrders();
     const [selectedOrder, setSelectedOrder] = useState(null);
-  console.log(selectedOrder)
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 5;
+
+    // Pagination calculations
+    const totalPages = Math.ceil(orders.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+
     const formatDate = (dateString) => dateString?.split(",")[0];
 
     const data = orders.map((order) => ({
@@ -39,6 +45,8 @@ export function MaterialOrdersTable() {
         status: order.status,
     }));
 
+    const paginatedData = data.slice(startIndex, endIndex);
+
     const getStatusBadge = (status) => {
         switch (status) {
             case 'Shipped':
@@ -52,9 +60,21 @@ export function MaterialOrdersTable() {
         }
     };
 
+    const handlePreviousPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(currentPage - 1);
+        }
+    };
+
+    const handleNextPage = () => {
+        if (currentPage < totalPages) {
+            setCurrentPage(currentPage + 1);
+        }
+    };
+
     return (
         <>
-            <div className="w-full flex ">
+            <div className="w-full flex">
                 <button 
                     className="px-6 py-1 bg-primary text-gray-100 rounded-md hover:bg-primary/90 flex justify-center items-center gap-3"
                     onClick={fetchOrders}
@@ -84,45 +104,74 @@ export function MaterialOrdersTable() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {data.map((item) => (
-                            <TableRow key={item.id}>
-                                <TableCell className="font-medium">{item.id}</TableCell>
-                                <TableCell>{item.supplierName}</TableCell>
-                                <TableCell>{item.manufacturerName}</TableCell>
-                                <TableCell>{item.materialName}</TableCell>
-                                <TableCell>{item.quantityOrdered}</TableCell>
-                                <TableCell>{item.quantityReceived}</TableCell>
-                                <TableCell>{item.price}</TableCell>
-                                <TableCell>
-                                    {getStatusBadge(item.status)}
-                                </TableCell>
-                                {/* Details Button */}
-                                <TableCell className="text-right">
-                                    <button
-                                        className="w-20 py-1 bg-yellow-700 rounded-lg hover:bg-yellow-600 text-white"
-                                        onClick={() => setSelectedOrder(item)}
-                                    >
-                                        Details
-                                    </button>
+                        {paginatedData.length === 0 ? (
+                            <TableRow>
+                                <TableCell colSpan={9} className="text-center">
+                                    No material orders available
                                 </TableCell>
                             </TableRow>
-                        ))}
+                        ) : (
+                            paginatedData.map((item) => (
+                                <TableRow key={item.id}>
+                                    <TableCell className="font-medium">{item.id}</TableCell>
+                                    <TableCell>{item.supplierName}</TableCell>
+                                    <TableCell>{item.manufacturerName}</TableCell>
+                                    <TableCell>{item.materialName}</TableCell>
+                                    <TableCell>{item.quantityOrdered}</TableCell>
+                                    <TableCell>{item.quantityReceived}</TableCell>
+                                    <TableCell>{item.price}</TableCell>
+                                    <TableCell>
+                                        {getStatusBadge(item.status)}
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <button
+                                            className="w-20 py-1 bg-yellow-700 rounded-lg hover:bg-yellow-600 text-white"
+                                            onClick={() => setSelectedOrder(item)}
+                                        >
+                                            Details
+                                        </button>
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        )}
                     </TableBody>
+                    <TableFooter>
+                        <TableRow>
+                            <TableCell colSpan={7}>
+                                Page {currentPage}/{totalPages}
+                            </TableCell>
+                            <TableCell colSpan={2} className="text-right">
+                                <div className="flex gap-5 justify-end items-center">
+                                    <button
+                                        className="w-24 py-1 border hover:bg-gray-200 rounded-md disabled:opacity-50"
+                                        onClick={handlePreviousPage}
+                                        disabled={currentPage === 1}
+                                    >
+                                        Previous
+                                    </button>
+                                    <button
+                                        className="w-24 py-1 border hover:bg-gray-200 rounded-md disabled:opacity-50"
+                                        onClick={handleNextPage}
+                                        disabled={currentPage === totalPages}
+                                    >
+                                        Next
+                                    </button>
+                                </div>
+                            </TableCell>
+                        </TableRow>
+                    </TableFooter>
                 </Table>
             )}
 
-            {/* Show details modal when an order is selected */}
-            {selectedOrder && 
-              <>
-              <div className="fixed top-0 left-0 w-full h-full flex justify-center items-center ">
-                  <MaterialOrderDetails order={selectedOrder} onClose={() => setSelectedOrder(null)} />
-                <div
-                  className="fixed top-0 left-0 w-full h-full bg-black/90 z-30"
-                  onClick={() => setSelectedOrder(null)}>  
+            {selectedOrder && (
+                <div className="fixed top-0 left-0 w-full h-full flex justify-center items-center">
+                    <MaterialOrderDetails order={selectedOrder} onClose={() => setSelectedOrder(null)} />
+                    <div
+                        className="fixed top-0 left-0 w-full h-full bg-black/90 z-30"
+                        onClick={() => setSelectedOrder(null)}
+                    ></div>
                 </div>
-              </div>
-
-              </>}
+            )}
         </>
     );
 }

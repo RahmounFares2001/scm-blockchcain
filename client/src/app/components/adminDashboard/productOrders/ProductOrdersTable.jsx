@@ -15,20 +15,38 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"; // Ensure all required components are imported
+} from "@/components/ui/table";
 import { useState } from "react";
 
-// Assuming OrdersDetails is a component you'll create
-import OrdersDetails from "./OrdersDetails"; // Adjust path as needed
+// Components
+import OrdersDetails from "./OrdersDetails";
 
 export function ProductOrdersTable() {
-  // Get orders from hook
   const { orders, loading, error, refreshOrders } = useGetAllOrders();
   const [clickedData, setClickedData] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
-  // Handle closing the details modal
+  // Pagination calculations
+  const totalPages = Math.ceil(orders.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedOrders = orders.slice(startIndex, endIndex);
+
   const handleClose = () => {
     setClickedData(null);
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
   };
 
   return (
@@ -61,14 +79,14 @@ export function ProductOrdersTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {orders.length === 0 ? (
+            {paginatedOrders.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="text-center">
                   No orders available
                 </TableCell>
               </TableRow>
             ) : (
-              orders.map((order) => (
+              paginatedOrders.map((order) => (
                 <TableRow key={order.id}>
                   <TableCell className="font-medium">{order.id}</TableCell>
                   <TableCell>{order.productName}</TableCell>
@@ -104,18 +122,22 @@ export function ProductOrdersTable() {
           </TableBody>
           <TableFooter>
             <TableRow>
-              <TableCell colSpan={6}>Page 1/1</TableCell>
-              <TableCell className="text-right">
+              <TableCell colSpan={5}>
+                Page {currentPage}/{totalPages}
+              </TableCell>
+              <TableCell colSpan={2} className="text-right">
                 <div className="flex gap-5 justify-end items-center">
                   <button
                     className="w-24 py-1 border hover:bg-gray-200 rounded-md disabled:opacity-50"
-                    disabled
+                    onClick={handlePreviousPage}
+                    disabled={currentPage === 1}
                   >
                     Previous
                   </button>
                   <button
                     className="w-24 py-1 border hover:bg-gray-200 rounded-md disabled:opacity-50"
-                    disabled
+                    onClick={handleNextPage}
+                    disabled={currentPage === totalPages}
                   >
                     Next
                   </button>

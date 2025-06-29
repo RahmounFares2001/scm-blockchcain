@@ -1,7 +1,7 @@
 "use client";
 
 // Hooks
-import useGetAllManufacturerOrders from "@/app/hooks/orders/useGetAllManufacturerOrders"; // Adjust path as needed
+import useGetAllManufacturerOrders from "@/app/hooks/orders/useGetAllManufacturerOrders";
 
 // Icons
 import { FiRefreshCcw } from "react-icons/fi";
@@ -20,18 +20,24 @@ import { useState } from "react";
 
 // Components
 import OrdersDetails from "./OrdersDetails";
-import ShipOrder from "./ShipOrder"; // Placeholder import
-import ProduceOrder from "./ProduceOrder"; // Placeholder import
+import ShipOrder from "./ShipOrder";
+import ProduceOrder from "./ProduceOrder";
 
 export default function ProductOrdersTable() {
-  // Get orders from hook
   const { orders, loading, error, fetchOrders } = useGetAllManufacturerOrders();
   const [clickedData, setClickedData] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
   const [showShipOrder, setShowShipOrder] = useState(false);
   const [showProduceOrder, setShowProduceOrder] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
-  // Handle closing all modals
+  // Pagination calculations
+  const totalPages = Math.ceil(orders.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedOrders = orders.slice(startIndex, endIndex);
+
   const handleClose = () => {
     setClickedData(null);
     setShowDetails(false);
@@ -39,22 +45,31 @@ export default function ProductOrdersTable() {
     setShowProduceOrder(false);
   };
 
-  // Handle Details button click
   const handleDetailsClick = (order) => {
     setClickedData(order);
     setShowDetails(true);
   };
 
-  // Handle Ship (Supply) button click
   const handleShipClick = (order) => {
     setClickedData(order);
     setShowShipOrder(true);
   };
 
-  // Handle Produce button click
   const handleProduceClick = (order) => {
     setClickedData(order);
     setShowProduceOrder(true);
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
   };
 
   return (
@@ -86,14 +101,14 @@ export default function ProductOrdersTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {orders.length === 0 ? (
+            {paginatedOrders.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="text-center">
                   No orders available
                 </TableCell>
               </TableRow>
             ) : (
-              orders.map((order) => (
+              paginatedOrders.map((order) => (
                 <TableRow key={order.id}>
                   <TableCell className="font-medium">{order.id}</TableCell>
                   <TableCell>{order.productName}</TableCell>
@@ -147,18 +162,22 @@ export default function ProductOrdersTable() {
           </TableBody>
           <TableFooter>
             <TableRow>
-              <TableCell colSpan={5}>Page 1/1</TableCell>
+              <TableCell colSpan={5}>
+                Page {currentPage}/{totalPages}
+              </TableCell>
               <TableCell className="text-right">
                 <div className="flex gap-5 justify-end items-center">
                   <button
                     className="w-24 py-1 border hover:bg-gray-200 rounded-md disabled:opacity-50"
-                    disabled
+                    onClick={handlePreviousPage}
+                    disabled={currentPage === 1}
                   >
                     Previous
                   </button>
                   <button
                     className="w-24 py-1 border hover:bg-gray-200 rounded-md disabled:opacity-50"
-                    disabled
+                    onClick={handleNextPage}
+                    disabled={currentPage === totalPages}
                   >
                     Next
                   </button>

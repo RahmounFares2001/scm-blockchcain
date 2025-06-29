@@ -19,6 +19,7 @@ export default function useClientConfirmDelivery() {
       setError(null);
       setSuccess(false);
 
+      console.log(clientOrderId);
       const contract = await createClientEthereumContract("OrderManagement2");
       if (!contract) {
         setError("Error connecting to the contract");

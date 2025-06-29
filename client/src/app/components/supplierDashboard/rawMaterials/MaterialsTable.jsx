@@ -23,17 +23,34 @@ export function MaterialsTable() {
   const { materials, loading, error, fetchSupplierMaterials } = useGetSupplierMaterials();
   const [clickedMaterial, setClickedMaterial] = useState(null);
   const [showUpdateForm, setShowUpdateForm] = useState(false);
-  console.log(materials)
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
-  // Handle refresh
+  // Pagination calculations
+  const totalPages = Math.ceil(materials.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedMaterials = materials.slice(startIndex, endIndex);
+
   const handleRefresh = async () => {
     await fetchSupplierMaterials();
   };
 
-  // Handle update button click
   const handleUpdateClick = (material) => {
     setClickedMaterial(material);
     setShowUpdateForm(true);
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
   };
 
   return (
@@ -65,30 +82,61 @@ export function MaterialsTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {materials.map((material) => (
-              <TableRow key={material.id}>
-                <TableCell>{material.name}</TableCell>
-                <TableCell>{material.description}</TableCell>
-                <TableCell>{material.price}</TableCell>
-                <TableCell>{material.quantityAvailable}</TableCell>
-                <TableCell className={`${material.isAvailable ? "text-green-700": "text-yellow-700"} font-bold`}
-                    >{material.isAvailable ? "Available" : "Not Available"}</TableCell>
-                <TableCell>
-                  <div className="flex gap-1 justify-center">
-                    <button
-                      onClick={() => handleUpdateClick(material)}
-                      className="w-20 py-1 rounded-lg bg-green-700 hover:bg-green-600 text-white"
-                    >
-                      Update
-                    </button>
-                  </div>
+            {paginatedMaterials.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center">
+                  No materials available
                 </TableCell>
               </TableRow>
-            ))}
+            ) : (
+              paginatedMaterials.map((material) => (
+                <TableRow key={material.id}>
+                  <TableCell>{material.name}</TableCell>
+                  <TableCell>{material.description}</TableCell>
+                  <TableCell>{material.price}</TableCell>
+                  <TableCell>{material.quantityAvailable}</TableCell>
+                  <TableCell
+                    className={`${material.isAvailable ? "text-green-700" : "text-yellow-700"} font-bold`}
+                  >
+                    {material.isAvailable ? "Available" : "Not Available"}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex gap-1 justify-center">
+                      <button
+                        onClick={() => handleUpdateClick(material)}
+                        className="w-20 py-1 rounded-lg bg-green-700 hover:bg-green-600 text-white"
+                      >
+                        Update
+                      </button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
           <TableFooter>
             <TableRow>
-              <TableCell colSpan={6}>Page 1/1</TableCell>
+              <TableCell colSpan={4}>
+                Page {currentPage}/{totalPages}
+              </TableCell>
+              <TableCell colSpan={2} className="text-right">
+                <div className="flex gap-5 justify-end items-center">
+                  <button
+                    className="w-24 py-1 border hover:bg-gray-200 rounded-md disabled:opacity-50"
+                    onClick={handlePreviousPage}
+                    disabled={currentPage === 1}
+                  >
+                    Previous
+                  </button>
+                  <button
+                    className="w-24 py-1 border hover:bg-gray-200 rounded-md disabled:opacity-50"
+                    onClick={handleNextPage}
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                  </button>
+                </div>
+              </TableCell>
             </TableRow>
           </TableFooter>
         </Table>

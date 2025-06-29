@@ -21,23 +21,27 @@ import useGetSupplierMaterialsByAddress from "@/app/hooks/suppliers/useGetSuppli
 import SupplierDetails from "./SupplierDetails";
 import UpdateSupplierForm from "./UpdateSupplierForm";
 
-
 export function SuppliersTable() {
   const { suppliers, loading, error, fetchSuppliers } = useGetAllSuppliers();
   const [clickedData, setClickedData] = useState(null);
   const [showUpdateForm, setShowUpdateForm] = useState(false);
   const [showSupplierDetails, setShowSupplierDetails] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
-  // Fetch materials for supplier
+  // Pagination calculations
+  const totalPages = Math.ceil(suppliers.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedSuppliers = suppliers.slice(startIndex, endIndex);
+
   const {
     materials: supplierMaterials,
     loading: materialsLoading,
     error: materialsError,
     fetchMaterials: fetchSupplierMaterials,
   } = useGetSupplierMaterialsByAddress(clickedData?.supplier?.address);
-  // console.log(supplierMaterials)
 
-  // Handle click
   const handleSupplierClick = async (supplier) => {
     const data = { supplier, materials: [] };
     setClickedData(data);
@@ -46,6 +50,18 @@ export function SuppliersTable() {
 
     setClickedData((prev) => ({ ...prev, materials: supplierMaterials }));
     setShowSupplierDetails(true);
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
   };
 
   return (
@@ -78,49 +94,77 @@ export function SuppliersTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {suppliers.map((supplier) => (
-              <TableRow key={supplier.address}>
-                <TableCell>{supplier.name}</TableCell>
-                <TableCell>{supplier.reliabilityRating}</TableCell>
-                <TableCell
-                  className={`${
-                    supplier.fraudStatus === "Fraud"
-                      ? "text-red-700"
-                      : supplier.fraudStatus === "Reliable"
-                      ? "text-green-700"
-                      : "text-yellow-700"
-                  } font-bold`}
-                >
-                  {supplier.fraudStatus}
-                </TableCell>
-                <TableCell>{supplier.place}</TableCell>
-                <TableCell>{supplier.email}</TableCell>
-                <TableCell>{supplier.violations.join(", ")}</TableCell>
-                <TableCell>
-                  <div className="flex gap-1">
-                    <button
-                      onClick={() => {
-                        setClickedData({ supplier, materials: [] });
-                        setShowUpdateForm(true);
-                      }}
-                      className="w-20 py-1 rounded-lg bg-green-700 hover:bg-green-600 text-white"
-                    >
-                      Update
-                    </button>
-                    <button
-                      onClick={() => handleSupplierClick(supplier)}
-                      className="w-20 py-1 bg-yellow-700 rounded-lg hover:bg-yellow-600 text-white"
-                    >
-                      Details
-                    </button>
-                  </div>
+            {paginatedSuppliers.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center">
+                  No suppliers available
                 </TableCell>
               </TableRow>
-            ))}
+            ) : (
+              paginatedSuppliers.map((supplier) => (
+                <TableRow key={supplier.address}>
+                  <TableCell>{supplier.name}</TableCell>
+                  <TableCell>{supplier.reliabilityRating}</TableCell>
+                  <TableCell
+                    className={`${
+                      supplier.fraudStatus === "Fraud"
+                        ? "text-red-700"
+                        : supplier.fraudStatus === "Reliable"
+                        ? "text-green-700"
+                        : "text-yellow-700"
+                    } font-bold`}
+                  >
+                    {supplier.fraudStatus}
+                  </TableCell>
+                  <TableCell>{supplier.place}</TableCell>
+                  <TableCell>{supplier.email}</TableCell>
+                  <TableCell>{supplier.violations.length}</TableCell>
+                  <TableCell>
+                    <div className="flex gap-1">
+                      <button
+                        onClick={() => {
+                          setClickedData({ supplier, materials: [] });
+                          setShowUpdateForm(true);
+                        }}
+                        className="w-20 py-1 rounded-lg bg-green-700 hover:bg-green-600 text-white"
+                      >
+                        Update
+                      </button>
+                      <button
+                        onClick={() => handleSupplierClick(supplier)}
+                        className="w-20 py-1 bg-yellow-700 rounded-lg hover:bg-yellow-600 text-white"
+                      >
+                        Details
+                      </button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
           <TableFooter>
             <TableRow>
-              <TableCell colSpan={8}>Page 1/1</TableCell>
+              <TableCell colSpan={5}>
+                Page {currentPage}/{totalPages}
+              </TableCell>
+              <TableCell colSpan={2} className="text-right">
+                <div className="flex gap-5 justify-end items-center">
+                  <button
+                    className="w-24 py-1 border hover:bg-gray-200 rounded-md disabled:opacity-50"
+                    onClick={handlePreviousPage}
+                    disabled={currentPage === 1}
+                  >
+                    Previous
+                  </button>
+                  <button
+                    className="w-24 py-1 border hover:bg-gray-200 rounded-md disabled:opacity-50"
+                    onClick={handleNextPage}
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                  </button>
+                </div>
+              </TableCell>
             </TableRow>
           </TableFooter>
         </Table>

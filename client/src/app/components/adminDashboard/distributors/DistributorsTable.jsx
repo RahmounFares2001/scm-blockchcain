@@ -15,12 +15,18 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-  } from "@/components/ui/table"
+} from "@/components/ui/table"
+import { useState } from "react";
 
-  
-  export function DistributorsTable() {
-     // get distributors
+export function DistributorsTable() {
   const { distributors, loading, error, fetchDistributors } = useGetAllDistributors();
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  // Pagination calculations
+  const totalPages = Math.ceil(distributors.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
 
   const data = distributors.map((distributor) => ({
     address: distributor.address,
@@ -29,48 +35,88 @@ import {
     place: distributor.place,
   }));
 
-    return (
-      <>
-      <div className="w-full flex" >
-        <button className="px-6 py-1 bg-primary text-gray-100 rounded-md hover:bg-primary/90
-                flex justify-center items-center gap-3"
-                onClick={fetchDistributors} >
-            Refresh Distributors
-            <FiRefreshCcw />
+  const paginatedData = data.slice(startIndex, endIndex);
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  return (
+    <>
+      <div className="w-full flex">
+        <button
+          className="px-6 py-1 bg-primary text-gray-100 rounded-md hover:bg-primary/90 flex justify-center items-center gap-3"
+          onClick={fetchDistributors}
+        >
+          Refresh Distributors
+          <FiRefreshCcw />
         </button>
       </div>
-      {loading ? 
-          <h1>Loading...</h1> :
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Email Address</TableHead>
-            <TableHead>Place</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {data.map((item) => (
-            <TableRow key={item.address}>
-              <TableCell className="font-medium">{item.name}</TableCell>
-              <TableCell>{item.emailAddress}</TableCell>
-              <TableCell>{item.place}</TableCell>
+      {loading ? (
+        <h1>Loading...</h1>
+      ) : error ? (
+        <h1 className="text-red-500">{error}</h1>
+      ) : (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Email Address</TableHead>
+              <TableHead>Place</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-        <TableFooter>
-          <TableRow>
-            <TableCell colSpan={3}>Page 1/1</TableCell>
-            <TableCell className="text-right pt-3">
-                <div className="flex gap-5 justify-end items-center
-                            pt-3" >
-                    <button className="w-24 py-1 border hover:bg-gray-200 rounded-md" >Previous</button>
-                    <button className="w-24 py-1 border hover:bg-gray-200 rounded-md" >Next</button>
+          </TableHeader>
+          <TableBody>
+            {paginatedData.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={3} className="text-center">
+                  No distributors available
+                </TableCell>
+              </TableRow>
+            ) : (
+              paginatedData.map((item) => (
+                <TableRow key={item.address}>
+                  <TableCell className="font-medium">{item.name}</TableCell>
+                  <TableCell>{item.emailAddress}</TableCell>
+                  <TableCell>{item.place}</TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+          <TableFooter>
+            <TableRow>
+              <TableCell colSpan={2}>
+                Page {currentPage}/{totalPages}
+              </TableCell>
+              <TableCell className="text-right">
+                <div className="flex gap-5 justify-end items-center">
+                  <button
+                    className="w-24 py-1 border hover:bg-gray-200 rounded-md disabled:opacity-50"
+                    onClick={handlePreviousPage}
+                    disabled={currentPage === 1}
+                  >
+                    Previous
+                  </button>
+                  <button
+                    className="w-24 py-1 border hover:bg-gray-200 rounded-md disabled:opacity-50"
+                    onClick={handleNextPage}
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                  </button>
                 </div>
-            </TableCell>
-          </TableRow>
-        </TableFooter>
-      </Table>}      
-      </>
-    )
-  }
+              </TableCell>
+            </TableRow>
+          </TableFooter>
+        </Table>
+      )}
+    </>
+  );
+}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { createEthereumContract } from "@/app/utils/constants";
+import { createClientEthereumContract, createEthereumContract } from "@/app/utils/constants";
 
 export default function useFetchDistributorByAddress() {
   const [distributor, setDistributor] = useState(null);
@@ -18,7 +18,7 @@ export default function useFetchDistributorByAddress() {
       setLoading(true);
       setError(null);
 
-      const contract = await createEthereumContract("UserManagement");
+      const contract = await createClientEthereumContract("UserManagement");
       if (!contract) {
         setError("Error connecting to the contract");
         return;

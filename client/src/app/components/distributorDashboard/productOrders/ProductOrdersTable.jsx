@@ -21,7 +21,7 @@ import { useState } from "react";
 // Components
 import OrdersDetails from "./OrdersDetails";
 import DistributorConfirmDelivery from "./DistributorConfirmDelivery";
-import ClientOrderForm from "./ClientOrderForm"; 
+import ClientOrderForm from "./ClientOrderForm";
 
 export default function ProductOrdersTable() {
   const { orders, loading, error, fetchOrders } = useGetAllDistributorOrders();
@@ -29,6 +29,14 @@ export default function ProductOrdersTable() {
   const [showDetails, setShowDetails] = useState(false);
   const [showConfirmDelivery, setShowConfirmDelivery] = useState(false);
   const [showClientOrderForm, setShowClientOrderForm] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  // Pagination calculations
+  const totalPages = Math.ceil(orders.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedOrders = orders.slice(startIndex, endIndex);
 
   // Handle closing all modals
   const handleClose = () => {
@@ -54,6 +62,19 @@ export default function ProductOrdersTable() {
   const handleOrderClick = (order) => {
     setClickedData(order);
     setShowClientOrderForm(true);
+  };
+
+  // Handle pagination navigation
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
   };
 
   return (
@@ -85,14 +106,14 @@ export default function ProductOrdersTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {orders.length === 0 ? (
+            {paginatedOrders.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="text-center">
                   No orders available
                 </TableCell>
               </TableRow>
             ) : (
-              orders.map((order) => (
+              paginatedOrders.map((order) => (
                 <TableRow key={order.id}>
                   <TableCell className="font-medium">{order.id}</TableCell>
                   <TableCell>{order.productName}</TableCell>
@@ -146,18 +167,22 @@ export default function ProductOrdersTable() {
           </TableBody>
           <TableFooter>
             <TableRow>
-              <TableCell colSpan={5}>Page 1/1</TableCell>
+              <TableCell colSpan={5}>
+                Page {currentPage}/{totalPages}
+              </TableCell>
               <TableCell className="text-right">
                 <div className="flex gap-5 justify-end items-center">
                   <button
                     className="w-24 py-1 border hover:bg-gray-200 rounded-md disabled:opacity-50"
-                    disabled
+                    onClick={handlePreviousPage}
+                    disabled={currentPage === 1}
                   >
                     Previous
                   </button>
                   <button
                     className="w-24 py-1 border hover:bg-gray-200 rounded-md disabled:opacity-50"
-                    disabled
+                    onClick={handleNextPage}
+                    disabled={currentPage === totalPages}
                   >
                     Next
                   </button>

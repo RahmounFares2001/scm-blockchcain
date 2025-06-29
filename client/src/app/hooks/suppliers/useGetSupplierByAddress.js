@@ -36,7 +36,7 @@ export default function useGetSupplierByAddress(supplierAddress) {
         fraudStatus: data.isFraud,
         place: data.place,
         email: data.emailAddress,
-        violations: Number(data.violations), 
+        violations: data.violations, 
       };
   
       setSupplier(formattedSupplier);

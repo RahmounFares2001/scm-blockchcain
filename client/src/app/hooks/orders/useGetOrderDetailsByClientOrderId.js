@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { createEthereumContract } from "@/app/utils/constants";
+import { createClientEthereumContract } from "@/app/utils/constants";
 
 export default function useGetOrderDetailsByClientOrderId(clientOrderId) {
   const [orderDetails, setOrderDetails] = useState(null);
@@ -18,7 +18,7 @@ export default function useGetOrderDetailsByClientOrderId(clientOrderId) {
       setLoading(true);
       setError(null);
 
-      const contract = await createEthereumContract("OrderManagement2");
+      const contract = await createClientEthereumContract("OrderManagement2");
       if (!contract) {
         setError("Error connecting to the contract");
         return;
@@ -55,7 +55,6 @@ export default function useGetOrderDetailsByClientOrderId(clientOrderId) {
           deliveredToClientAt: data[1][9].toString(),
         },
       };
-      console.log(formattedDetails)
       
       setOrderDetails(formattedDetails);
     } catch (err) {

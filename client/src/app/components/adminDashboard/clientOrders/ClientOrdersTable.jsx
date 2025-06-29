@@ -18,26 +18,28 @@ import {
 } from "@/components/ui/table";
 import { useState } from "react";
 
-// Assuming ClientOrdersDetails is a component you'll create
+// Components
 import ClientOrdersDetails from "./ClientOrdersDetails";
 
 export function ClientOrdersTable() {
-  // Get client orders from hook
   const { clientOrders, loading, error, refreshClientOrders } = useGetAllClientOrders();
   const [clickedData, setClickedData] = useState(null);
-  console.log(clickedData);
-    
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
-  // Handle closing the details modal
+  // Pagination calculations
+  const totalPages = Math.ceil(clientOrders.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedOrders = clientOrders.slice(startIndex, endIndex);
+
   const handleClose = () => {
     setClickedData(null);
   };
 
-  // Function to determine the combined status
   const getCombinedStatus = (clientOrder) => {
     const { order, clientOrder: co } = clientOrder;
     
-    // Derive client order status
     if (co.isArrivedToClient && co.deliveredToClientAt !== "0") {
       return "Delivered to Client";
     }
@@ -48,8 +50,19 @@ export function ClientOrdersTable() {
       return "Pending Shipment to Client";
     }
     
-    // Fall back to order status
     return order.status;
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
   };
 
   return (
@@ -83,14 +96,14 @@ export function ClientOrdersTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {clientOrders.length === 0 ? (
+            {paginatedOrders.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} className="text-center">
                   No client orders available
                 </TableCell>
               </TableRow>
             ) : (
-              clientOrders.map((clientOrder) => {
+              paginatedOrders.map((clientOrder) => {
                 const status = getCombinedStatus(clientOrder);
                 return (
                   <TableRow key={clientOrder.clientOrder.id}>
@@ -136,18 +149,22 @@ export function ClientOrdersTable() {
           </TableBody>
           <TableFooter>
             <TableRow>
-              <TableCell colSpan={7}>Page 1/1</TableCell>
-              <TableCell className="text-right">
+              <TableCell colSpan={6}>
+                Page {currentPage}/{totalPages}
+              </TableCell>
+              <TableCell colSpan={2} className="text-right">
                 <div className="flex gap-5 justify-end items-center">
                   <button
                     className="w-24 py-1 border hover:bg-gray-200 rounded-md disabled:opacity-50"
-                    disabled
+                    onClick={handlePreviousPage}
+                    disabled={currentPage === 1}
                   >
                     Previous
                   </button>
                   <button
                     className="w-24 py-1 border hover:bg-gray-200 rounded-md disabled:opacity-50"
-                    disabled
+                    onClick={handleNextPage}
+                    disabled={currentPage === totalPages}
                   >
                     Next
                   </button>

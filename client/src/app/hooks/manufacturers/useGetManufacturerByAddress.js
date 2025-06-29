@@ -1,13 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { createEthereumContract } from "@/app/utils/constants";
+import { createClientEthereumContract } from "@/app/utils/constants";
 
 export default function useGetManufacturerByAddress(manufacturerAddress) {
   const [manufacturer, setManufacturer] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  console.log("data");
 
   const fetchManufacturer = async (address) => {
     try {
@@ -19,7 +18,7 @@ export default function useGetManufacturerByAddress(manufacturerAddress) {
       setLoading(true);
       setError(null);
 
-      const contract = await createEthereumContract("UserManagement");
+      const contract = await createClientEthereumContract("UserManagement");
       if (!contract) {
         setError("Error connecting to the contract");
         return;
